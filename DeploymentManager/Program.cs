@@ -14,7 +14,9 @@ namespace DeploymentManager
         /// </summary>
         public static void Main(string[] args)
         {
-            log4net.Config.XmlConfigurator.Configure();
+            log4net.Config.XmlConfigurator.Configure(new FileInfo(Path.Combine(
+                AppContext.BaseDirectory,
+                "log4net.config")));
 
             ILoggerService _logger = new LoggerServiceWrapper("System");
             _logger.LogMessage(
@@ -34,7 +36,7 @@ namespace DeploymentManager
                 StandardValues.LoggerValues.Debug,
                 "Added Razor Components");
 
-            AppSettingsModel? appSettings = null;
+            AppSettingsModel appSettings = new();
 
             builder.Configuration.Bind(
                 "AppSettings",
