@@ -8,10 +8,10 @@ namespace DeploymentManager.Models
     /// </summary>
     public class AppSettingsModel
     {
-        public required string SiteAuth { get; set; }
-        public required string DeploymentHistoryLocation { get; set; }
-        public required List<EnvironmentModel> Environments { get; set; }
-        public required GitHubOptionsModel GitHubOptions { get; set; }
-        public required List<ProjectModel> Projects { get; set; }
+        public string SiteAuth { get; set; }
+        public string DeploymentHistoryLocation { get; set; }
+        public List<EnvironmentModel> Environments { get; set; }
+        public GitHubOptionsModel GitHubOptions { get; set; }
+        public List<ProjectModel> Projects { get; set; }
     }
 }
