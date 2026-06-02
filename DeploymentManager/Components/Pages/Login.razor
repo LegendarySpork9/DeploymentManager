@@ -10,21 +10,23 @@
 
         <EditForm
             Model="LoginInformation"
-            OnValidSubmit="HandleLogin"
+            OnSubmit="HandleLogin"
             FormName="login">
             <div class="mb-3">
                 <label class="form-label">Username</label>
-                <InputText
-                    @bind-Value="LoginInformation.Username"
-                    class="form-control"
+                <input
+                    @bind="LoginInformation.Username"
+                    @bind:event="oninput"
+                    class="form-control @(string.IsNullOrEmpty(LoginInformation.Username) ? "" : "valid modified")"
                     placeholder="Enter username" />
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Password</label>
-                <InputText
-                    @bind-Value="LoginInformation.Password"
-                    class="form-control"
+                <input
+                    @bind="LoginInformation.Password"
+                    @bind:event="oninput"
+                    class="form-control @(string.IsNullOrEmpty(LoginInformation.Password) ? "" : "valid modified")"
                     type="password"
                     placeholder="Enter password" />
             </div>
