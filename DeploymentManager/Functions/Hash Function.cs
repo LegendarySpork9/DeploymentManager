@@ -9,9 +9,9 @@ namespace DeploymentManager.Functions
         /// <summary>
         /// Takes the given value and hashes it.
         /// </summary>
-        public static string? HashString(string value)
+        public static string HashString(string value)
         {
-            string? hashString = null;
+            string hashString = value;
 
             if (!string.IsNullOrWhiteSpace(value))
             {
