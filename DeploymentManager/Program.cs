@@ -1,19 +1,38 @@
+// Copyright © - Unpublished - Toby Hunter
+using DeploymentManager.Abstractions;
 using DeploymentManager.Components;
+using DeploymentManager.Implementations;
 using DeploymentManager.Models;
+using DeploymentManager.Values;
 
 namespace DeploymentManager
 {
     public class Program
     {
+        /// <summary>
+        /// Configures the application at startup.
+        /// </summary>
         public static void Main(string[] args)
         {
-            var builder = WebApplication.CreateBuilder(args);
+            log4net.Config.XmlConfigurator.Configure();
 
-            // Add services to the container.
+            ILoggerService _logger = new LoggerServiceWrapper("System");
+            _logger.LogMessage(
+                StandardValues.LoggerValues.Info,
+                "Starting Website");
+
+            WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+            _logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                "Created Builder");
+
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
 
-            var app = builder.Build();
+            _logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                "Added Razor Components");
 
             AppSettingsModel? appSettings = null;
 
@@ -21,27 +40,70 @@ namespace DeploymentManager
                 "AppSettings",
                 appSettings);
 
+            _logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                "Loaded Configuration");
+
             if (appSettings != null)
             {
                 builder.Services.AddSingleton(appSettings);
             }
 
-            // Configure the HTTP request pipeline.
+            builder.Services.AddSingleton<ILoggerService>(_logger);
+            builder.Services.AddSingleton<IFileSystem, FileSystemWrapper>();
+            builder.Services.AddHttpContextAccessor();
+
+            _logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                "Configured Services");
+
+            WebApplication app = builder.Build();
+
+            _logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                "Built Application");
+
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
-            app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
             app.UseHttpsRedirection();
+
+            _logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                "Configured HTTPS Redirection");
+
+            app.UseStatusCodePagesWithReExecute(
+                "/not-found",
+                createScopeForStatusCodePages: true);
+
+            _logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                "Configured Status Code Pages");
 
             app.UseAntiforgery();
 
+            _logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                "Configured Antiforgery");
+
             app.MapStaticAssets();
+
+            _logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                "Configured Static Assets");
+
             app.MapRazorComponents<App>()
                 .AddInteractiveServerRenderMode();
+
+            _logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                "Mapped Razor Components with Interactive Server Render Mode");
+            _logger.LogMessage(
+                StandardValues.LoggerValues.Info,
+                "Running Website");
 
             app.Run();
         }
