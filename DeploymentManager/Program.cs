@@ -1,4 +1,5 @@
 using DeploymentManager.Components;
+using DeploymentManager.Models;
 
 namespace DeploymentManager
 {
@@ -13,6 +14,17 @@ namespace DeploymentManager
                 .AddInteractiveServerComponents();
 
             var app = builder.Build();
+
+            AppSettingsModel? appSettings = null;
+
+            builder.Configuration.Bind(
+                "AppSettings",
+                appSettings);
+
+            if (appSettings != null)
+            {
+                builder.Services.AddSingleton(appSettings);
+            }
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
