@@ -6,6 +6,11 @@ namespace DeploymentManager.Entities
     /// </summary>
     public enum DeploymentStage
     {
-
+        FetchArtefacts,
+        ExtractArtefacts,
+        StopService,
+        MoveArtefacts,
+        StartService,
+        CleanArtefacts
     }
 }
