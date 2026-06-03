@@ -18,13 +18,15 @@ namespace DeploymentManager.Test.Services
         {
             SiteAuth = string.Empty,
             DeploymentHistoryLocation = @"C:\DeployHistory",
+            ApprovalCredentialLocation = string.Empty,
             Environments =
             [
                 new()
                 {
                     Device = string.Empty,
                     Drive = string.Empty,
-                    Name = string.Empty
+                    Name = string.Empty,
+                    ArtefactSource = ArtefactSource.Actions
                 }
             ],
             GitHubOptions = new()

@@ -15,7 +15,7 @@ namespace DeploymentManager.Models.Data
         public required DateTime StartDate { get; set; }
         public required DateTime EndDate { get; set; }
         public required TimeSpan RunTime { get; set; }
-        public required int ArtefactId { get; set; }
+        public required long ArtefactId { get; set; }
         public required string ArtefactName { get; set; }
         public required long ArtefactSize { get; set; }
         public required string GitHubBranchId { get; set; }
