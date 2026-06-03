@@ -15,6 +15,8 @@ namespace DeploymentManager.Components.Pages
         [Inject]
         private DocumentService _DocumentService { get; set; } = default!;
         [Inject]
+        private IISService _IISService { get; set; } = default!;
+        [Inject]
         private AppSettingsModel AppSettings { get; set; } = default!;
 
         private ApprovalDialog approvalDialog;
@@ -107,17 +109,23 @@ namespace DeploymentManager.Components.Pages
                         }
                     }
 
-                    if (await _DocumentService.MoveArtefactFiles(
-                        Artifact.Name,
-                        $@"C:\{project.Directory}",
-                        filesToMove))
+                    if (await _IISService.StopSite(project.Name))
                     {
-                        if (await _DocumentService.DeleteArtefact(
+                        if (await _DocumentService.MoveArtefactFiles(
                             Artifact.Name,
-                            artefactFile,
-                            extractedArtefactFile))
+                            $@"C:\{project.Directory}",
+                            filesToMove))
                         {
-
+                            if (await _DocumentService.DeleteArtefact(
+                                Artifact.Name,
+                                artefactFile,
+                                extractedArtefactFile))
+                            {
+                                if (await _IISService.StartSite(project.Name))
+                                {
+                                    Text2 = "Deployment Complete";
+                                }
+                            }
                         }
                     }
                 }
