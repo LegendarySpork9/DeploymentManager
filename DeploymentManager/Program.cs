@@ -3,6 +3,7 @@ using DeploymentManager.Abstractions;
 using DeploymentManager.Components;
 using DeploymentManager.Implementations;
 using DeploymentManager.Models;
+using DeploymentManager.Services;
 using DeploymentManager.Values;
 
 namespace DeploymentManager
@@ -53,6 +54,7 @@ namespace DeploymentManager
 
             builder.Services.AddSingleton<ILoggerService>(_logger);
             builder.Services.AddSingleton<IFileSystem, FileSystemWrapper>();
+            builder.Services.AddSingleton<ApprovalService, ApprovalService>();
             builder.Services.AddHttpContextAccessor();
 
             _logger.LogMessage(

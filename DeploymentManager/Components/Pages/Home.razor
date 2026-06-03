@@ -1,7 +1,37 @@
 ﻿@page "/"
+@using DeploymentManager.Components.Shared
 
 <PageTitle>Home</PageTitle>
 
 <h1>Hello, world!</h1>
 
 Welcome to your new app.
+
+<p1>@Text</p1>
+
+<button class="btn btn-primary" @onclick="StartDeployment">Start</button>
+
+<ApprovalDialog
+    @ref="approvalDialog"
+    OnApproved="HandleApproved"
+    OnCancelled="HandleCancelled" />
+
+@code{
+    private ApprovalDialog approvalDialog;
+    private string Text;
+
+    private void StartDeployment()
+    {
+        approvalDialog.Show();
+    }
+
+    private async Task HandleApproved()
+    {
+        Text = "Approved";
+    }
+
+    private async Task HandleCancelled()
+    {
+        Text = "Cancelled";
+    }
+}

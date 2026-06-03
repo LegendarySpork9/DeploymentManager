@@ -1,0 +1,53 @@
+@if (IsVisible)
+{
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal fade show" style="display: block;" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Deployment Approval</h5>
+                </div>
+
+                <div class="modal-body">
+                    <p>Enter the 6-digit code from your authenticator app to approve this deployment.</p>
+
+                    <EditForm
+                        Model="ApprovalForm"
+                        OnSubmit="HandleApproval"
+                        FormName="approval">
+                        <div class="mb-3">
+                            <label class="form-label">Approval Code</label>
+                            <input
+                                @bind="ApprovalForm.Code"
+                                @bind:event="oninput"
+                                class="form-control approval-input"
+                                maxlength="6"
+                                placeholder="000000" />
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(ErrorMessage))
+                        {
+                            <div class="alert alert-danger py-2" role="alert">
+                                @ErrorMessage
+                            </div>
+                        }
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary" disabled="@(IsLoading || ApprovalForm.Code.Length != 6)">
+                                @if (IsLoading)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                }
+                                Approve
+                            </button>
+
+                            <button type="button" class="btn btn-outline-light" @onclick="HandleCancel" disabled="@IsLoading">
+                                Cancel
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+}

@@ -8,5 +8,6 @@ namespace DeploymentManager.Abstractions
     {
         Task<string> ReadAllText(string path);
         Task WriteAllText(string path, string text);
+        Task CreateDirectory(string path);
     }
 }

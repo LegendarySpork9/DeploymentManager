@@ -1,0 +1,122 @@
+@page "/authenticator-setup"
+
+<PageTitle>Authenticator Setup</PageTitle>
+
+<h3 class="mb-4">Authenticator Setup</h3>
+
+@if (IsLoading && !IsAlreadySetup.HasValue)
+{
+    <div class="d-flex justify-content-center py-5">
+        <div class="spinner-border text-light" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+
+else
+{
+    if (IsAlreadySetup.Value && !IsReconfiguring)
+    {
+        <div class="card setup-card">
+            <div class="card-body p-4">
+                <div class="alert alert-success py-2" role="alert">
+                    Authenticator is already configured.
+                </div>
+
+                <p class="text-muted">
+                    Your authenticator app is linked and ready to approve deployments.
+                </p>
+
+                <button class="btn btn-outline-light mt-2" @onclick="StartReconfigure">
+                    Reconfigure Authenticator
+                </button>
+            </div>
+        </div>
+    }
+
+    else
+    {
+        if (string.IsNullOrEmpty(QRCodeBase64))
+        {
+            <div class="card setup-card">
+                <div class="card-body p-4">
+                    @if (IsReconfiguring)
+                    {
+                        <div class="alert alert-warning py-2" role="alert">
+                            Reconfiguring will replace your existing authenticator setup.
+                        </div>
+                    }
+
+                    <p>Link your authenticator app to approve deployments.</p>
+                    <p class="text-muted">
+                        You can use Microsoft Authenticator, Google Authenticator, Authy, or any TOTP-compatible app.
+                    </p>
+
+                    <button class="btn btn-primary mt-2" @onclick="GenerateSetup" disabled="@IsLoading">
+                        Generate QR Code
+                    </button>
+                </div>
+            </div>
+        }
+
+        else if (!IsVerified)
+        {
+            <div class="card setup-card">
+                <div class="card-body p-4">
+                    <p class="mb-3">Scan this QR code with your authenticator app:</p>
+
+                    <div class="text-center mb-4">
+                        <img src="data:image/png;base64,@QRCodeBase64" alt="QR Code" class="qr-code-image" />
+                    </div>
+
+                    <p class="mb-3">
+                        Then enter the 6-digit code shown in your app to verify the setup.
+                    </p>
+
+                    <EditForm Model="VerificationForm"
+                              OnSubmit="HandleVerification"
+                              FormName="verification">
+                        <div class="mb-3">
+                            <label class="form-label">Verification Code</label>
+                            <input @bind="VerificationForm.Code"
+                                   @bind:event="oninput"
+                                   class="form-control verification-input"
+                                   maxlength="6"
+                                   placeholder="000000" />
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(ErrorMessage))
+                        {
+                            <div class="alert alert-danger py-2" role="alert">
+                                @ErrorMessage
+                            </div>
+                        }
+
+                        <button type="submit" class="btn btn-primary" disabled="@(IsLoading || VerificationForm.Code.Length != 6)">
+                            @if (IsLoading)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            }
+                            Verify
+                        </button>
+                    </EditForm>
+                </div>
+            </div>
+        }
+
+        else
+        {
+            <div class="card setup-card">
+                <div class="card-body p-4">
+                    <div class="alert alert-success py-2" role="alert">
+                        Authenticator configured successfully.
+                    </div>
+
+                    <p>
+                        Your authenticator app is now linked. You will be asked for a code when approving deployments.
+                    </p>
+                </div>
+            </div>
+        }
+    }
+}
