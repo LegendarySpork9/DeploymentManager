@@ -1,5 +1,4 @@
-﻿using DeploymentManager.Abstractions;
-using DeploymentManager.Components.Shared;
+﻿using DeploymentManager.Components.Shared;
 using DeploymentManager.Models;
 using DeploymentManager.Models.Related;
 using DeploymentManager.Models.Responses;
@@ -14,10 +13,15 @@ namespace DeploymentManager.Components.Pages
         [Inject]
         private GitHubService _GitHubService { get; set; } = default!;
         [Inject]
+        private DocumentService _DocumentService { get; set; } = default!;
+        [Inject]
         private AppSettingsModel AppSettings { get; set; } = default!;
 
         private ApprovalDialog approvalDialog;
         private string Text;
+        private string Text2;
+
+        private ArtefactModel Artifact;
 
         private void StartDeployment()
         {
@@ -36,12 +40,86 @@ namespace DeploymentManager.Components.Pages
                 if (artefacts.Count > 0)
                 {
                     ArtefactModel artefact = artefacts.First();
+                    Artifact = artefact;
 
                     string downloadedFile = await _GitHubService.DownloadArtefact(
+                        AppSettings.ArtefactDownloadLocation,
                         artefact,
-                        project);
+                        project.GitHub.Repository);
 
                     Text = downloadedFile;
+                }
+            }
+        }
+
+        private async Task StartExtract()
+        {
+            if (!string.IsNullOrWhiteSpace(Text))
+            {
+                ProjectModel project = AppSettings.Projects.First(p => Text.Contains(p.GitHub.Artefact));
+
+                string artefactFile = Path.Combine(AppSettings.ArtefactDownloadLocation, $"{Artifact.Name}.zip");
+                string extractedArtefactFile = Path.Combine(AppSettings.ArtefactDownloadLocation, Artifact.Name);
+
+                if (await _DocumentService.ExtractArtefact(
+                    artefactFile,
+                    extractedArtefactFile))
+                {
+                    string[] files = await _DocumentService.GetExtractedArtefactFiles(
+                        Artifact.Name,
+                        extractedArtefactFile);
+
+                    List<(string, KeyValuePair<string, string>)> filesToMove = [];
+
+                    foreach (string file in files)
+                    {
+                        string fileName = Path.GetFileName(file);
+
+                        if (project.Ignore != null)
+                        {
+                            string? directory = Path.GetDirectoryName(file);
+
+                            if (!project.Ignore.Select(i => i.Name)
+                                    .Contains(fileName) && (directory != null && !project.Ignore.Select(i => i.Name)
+                                        .Contains(directory)))
+                            {
+                                string relativePath = Path.GetRelativePath(
+                                    extractedArtefactFile,
+                                    file);
+                                filesToMove.Add(new(
+                                    fileName,
+                                    new(
+                                        file,
+                                        $@"C:\{project.Directory}\{relativePath}")));
+                            }
+                        }
+
+                        else
+                        {
+                            string relativePath = Path.GetRelativePath(
+                                extractedArtefactFile,
+                                file);
+                            filesToMove.Add(new(
+                                fileName,
+                                new(
+                                    file,
+                                    $@"C:\{project.Directory}{relativePath}")));
+                        }
+                    }
+
+                    if (await _DocumentService.MoveArtefactFiles(
+                        Artifact.Name,
+                        $@"C:\{project.Directory}",
+                        filesToMove))
+                    {
+                        if (await _DocumentService.DeleteArtefact(
+                            Artifact.Name,
+                            artefactFile,
+                            extractedArtefactFile))
+                        {
+
+                        }
+                    }
                 }
             }
         }

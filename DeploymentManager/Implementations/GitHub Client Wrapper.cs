@@ -142,11 +142,11 @@ namespace DeploymentManager.Implementations
                         "Downloading File");
 
                     await _FileSystem.WriteStream(
-                        $@"{downloadPath}\{downloadFile}",
+                        Path.Combine(downloadPath, downloadFile),
                         stream);
                 }
 
-                downloadedFile = $@"{downloadPath}\{downloadFile}";
+                downloadedFile = Path.Combine(downloadPath, downloadFile);
             }
 
             catch (Exception ex)
@@ -272,11 +272,11 @@ namespace DeploymentManager.Implementations
                         "Downloading File");
 
                     await _FileSystem.WriteStream(
-                        $@"{downloadPath}\{downloadFile}",
+                        Path.Combine(downloadPath, downloadFile),
                         stream);
                 }
 
-                downloadedFile = $@"{downloadPath}\{downloadFile}";
+                downloadedFile = Path.Combine(downloadPath, downloadFile);
             }
 
             catch (Exception ex)
