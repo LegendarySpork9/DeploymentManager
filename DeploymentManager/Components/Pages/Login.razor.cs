@@ -2,6 +2,7 @@
 using DeploymentManager.Abstractions;
 using DeploymentManager.Functions;
 using DeploymentManager.Models;
+using DeploymentManager.Models.Forms;
 using DeploymentManager.Values;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
@@ -22,7 +23,7 @@ namespace DeploymentManager.Components.Pages
         [Inject]
         private AppSettingsModel AppSettings { get; set; } = default!;
 
-        private readonly LoginForm LoginInformation = new();
+        private readonly LoginFormModel LoginInformation = new();
 
         private bool IsLoading;
 
@@ -95,15 +96,6 @@ namespace DeploymentManager.Components.Pages
             }
 
             IsLoading = false;
-        }
-
-        /// <summary>
-        /// Stores the information used for logging in.
-        /// </summary>
-        private class LoginForm
-        {
-            public string Username { get; set; } = string.Empty;
-            public string Password { get; set; } = string.Empty;
         }
     }
 }
