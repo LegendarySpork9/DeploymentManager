@@ -50,11 +50,14 @@ namespace DeploymentManager
             if (appSettings != null)
             {
                 builder.Services.AddSingleton(appSettings);
+                builder.Services.AddSingleton(appSettings.GitHubOptions);
             }
 
             builder.Services.AddSingleton<ILoggerService>(_logger);
             builder.Services.AddSingleton<IFileSystem, FileSystemWrapper>();
-            builder.Services.AddSingleton<ApprovalService, ApprovalService>();
+            builder.Services.AddSingleton<IGitHubClient, GitHubClientWrapper>();
+            builder.Services.AddSingleton<ApprovalService>();
+            builder.Services.AddSingleton<GitHubService>();
             builder.Services.AddHttpContextAccessor();
 
             _logger.LogMessage(

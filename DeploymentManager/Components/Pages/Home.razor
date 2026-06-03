@@ -15,23 +15,3 @@ Welcome to your new app.
     @ref="approvalDialog"
     OnApproved="HandleApproved"
     OnCancelled="HandleCancelled" />
-
-@code{
-    private ApprovalDialog approvalDialog;
-    private string Text;
-
-    private void StartDeployment()
-    {
-        approvalDialog.Show();
-    }
-
-    private async Task HandleApproved()
-    {
-        Text = "Approved";
-    }
-
-    private async Task HandleCancelled()
-    {
-        Text = "Cancelled";
-    }
-}

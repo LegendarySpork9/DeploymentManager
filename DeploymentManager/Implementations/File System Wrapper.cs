@@ -22,5 +22,21 @@ namespace DeploymentManager.Implementations
         /// Creates a given directory.
         /// </summary>
         public async Task CreateDirectory(string path) => Directory.CreateDirectory(path);
+
+        /// <summary>
+        /// Creates/updates a given file with the given stream.
+        /// </summary>
+        public async Task WriteStream(
+            string path,
+            Stream stream)
+        {
+            using (FileStream fileStream = new(
+                path,
+                FileMode.Create,
+                FileAccess.Write))
+            {
+                await stream.CopyToAsync(fileStream);
+            }
+        }
     }
 }
