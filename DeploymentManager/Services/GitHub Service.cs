@@ -71,12 +71,13 @@ namespace DeploymentManager.Services
         /// Returns the downloaded artefact from the API.
         /// </summary>
         public async Task<string> DownloadArtefact(
+            string artefactDownloadLocation,
             ArtefactModel artefact,
-            ProjectModel project)
+            string repository)
         {
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
-                $"Downloading artefact, {artefact.Name}, from GitHub for {project.GitHub.Repository} repository");
+                $"Downloading artefact, {artefact.Name}, from GitHub for {repository} repository");
 
             string downloadedFile = string.Empty;
 
@@ -84,21 +85,21 @@ namespace DeploymentManager.Services
             {
                 downloadedFile = await _GitHubClient.DownloadArtefact(
                     artefact.Archive_Download_Url,
-                    project.Directory,
+                    artefactDownloadLocation,
                     $"{artefact.Name}.zip");
 
                 if (!string.IsNullOrWhiteSpace(downloadedFile))
                 {
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Info,
-                        $"Downloaded artefact, {artefact.Name}, from GitHub for {project.GitHub.Repository} repository");
+                        $"Downloaded artefact, {artefact.Name}, from GitHub for {repository} repository");
                 }
 
                 else
                 {
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Info,
-                        $"Failed to download artefact, {artefact.Name}, from GitHub for {project.GitHub.Repository} repository");
+                        $"Failed to download artefact, {artefact.Name}, from GitHub for {repository} repository");
                 }
             }
 
@@ -112,7 +113,7 @@ namespace DeploymentManager.Services
                     ex.ToString());
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
-                    $"Failed to download artefact, {artefact.Name}, from GitHub for {project.GitHub.Repository} repository");
+                    $"Failed to download artefact, {artefact.Name}, from GitHub for {repository} repository");
             }
 
             return downloadedFile;
@@ -168,12 +169,13 @@ namespace DeploymentManager.Services
         /// Returns the downloaded release asset from the API.
         /// </summary>
         public async Task<string> DownloadReleaseAsset(
+            string artefactDownloadLocation,
             AssetModel asset,
-            ProjectModel project)
+            string repository)
         {
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
-                $"Downloading release asset, {asset.Name}, from GitHub for {project.GitHub.Repository} repository");
+                $"Downloading release asset, {asset.Name}, from GitHub for {repository} repository");
 
             string downloadedFile = string.Empty;
 
@@ -181,21 +183,21 @@ namespace DeploymentManager.Services
             {
                 downloadedFile = await _GitHubClient.DownloadReleaseAsset(
                     asset.Browser_Download_Url,
-                    project.Directory,
+                    artefactDownloadLocation,
                     asset.Name);
 
                 if (!string.IsNullOrWhiteSpace(downloadedFile))
                 {
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Info,
-                        $"Downloaded release asset, {asset.Name}, from GitHub for {project.GitHub.Repository} repository");
+                        $"Downloaded release asset, {asset.Name}, from GitHub for {repository} repository");
                 }
 
                 else
                 {
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Info,
-                        $"Failed to download release asset, {asset.Name}, from GitHub for {project.GitHub.Repository} repository");
+                        $"Failed to download release asset, {asset.Name}, from GitHub for {repository} repository");
                 }
             }
 
@@ -209,7 +211,7 @@ namespace DeploymentManager.Services
                     ex.ToString());
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
-                    $"Failed to download release asset, {asset.Name}, from GitHub for {project.GitHub.Repository} repository");
+                    $"Failed to download release asset, {asset.Name}, from GitHub for {repository} repository");
             }
 
             return downloadedFile;

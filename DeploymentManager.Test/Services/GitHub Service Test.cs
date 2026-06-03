@@ -143,8 +143,9 @@ namespace DeploymentManager.Test.Services
                 _MockGitHubClient.Object);
 
             string actual = await gitHubService.DownloadArtefact(
+                @"C:\Deploy",
                 artefact,
-                Project);
+                "Test");
 
             Assert.AreEqual(
                 expectedPath,
@@ -182,8 +183,9 @@ namespace DeploymentManager.Test.Services
                 _MockGitHubClient.Object);
 
             string actual = await gitHubService.DownloadArtefact(
+                @"C:\Deploy",
                 artefact,
-                Project);
+                "Test");
 
             Assert.IsEmpty(actual);
         }
@@ -219,8 +221,9 @@ namespace DeploymentManager.Test.Services
                 _MockGitHubClient.Object);
 
             string actual = await gitHubService.DownloadArtefact(
+                @"C:\Deploy",
                 artefact,
-                Project);
+                "Test");
 
             Assert.IsEmpty(actual);
         }
@@ -332,8 +335,9 @@ namespace DeploymentManager.Test.Services
                 _MockGitHubClient.Object);
 
             string actual = await gitHubService.DownloadReleaseAsset(
+                @"C:\Deploy",
                 asset,
-                Project);
+                "Test");
 
             Assert.AreEqual(
                 expectedPath,
@@ -366,8 +370,9 @@ namespace DeploymentManager.Test.Services
                 _MockGitHubClient.Object);
 
             string actual = await gitHubService.DownloadReleaseAsset(
+                @"C:\Deploy",
                 asset,
-                Project);
+                "Test");
 
             Assert.IsEmpty(actual);
         }
@@ -398,8 +403,9 @@ namespace DeploymentManager.Test.Services
                 _MockGitHubClient.Object);
 
             string actual = await gitHubService.DownloadReleaseAsset(
+                @"C:\Deploy",
                 asset,
-                Project);
+                "Test");
 
             Assert.IsEmpty(actual);
         }

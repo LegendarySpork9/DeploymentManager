@@ -231,7 +231,7 @@ namespace DeploymentManager.Test.Services
 
             _MockFileSystem.Verify(
                 fs => fs.WriteAllText(
-                    $@"{AppSettings.DeploymentHistoryLocation}\{AppSettings.Projects[0].Name}",
+                    Path.Combine(AppSettings.DeploymentHistoryLocation, AppSettings.Projects[0].Name),
                     It.IsAny<string>()),
                 Times.Once);
         }
@@ -300,7 +300,7 @@ namespace DeploymentManager.Test.Services
 
             _MockFileSystem.Verify(
                 fs => fs.WriteAllText(
-                    $@"{AppSettings.DeploymentHistoryLocation}\{AppSettings.Projects[0].Name}",
+                    Path.Combine(AppSettings.DeploymentHistoryLocation, AppSettings.Projects[0].Name),
                     It.IsAny<string>()),
                 Times.Once);
         }

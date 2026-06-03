@@ -39,7 +39,7 @@ namespace DeploymentManager.Services
 
             try
             {
-                string deploymentHistoryJSONString = await _FileSystem.ReadAllText($@"{AppSettings.DeploymentHistoryLocation}\{project}");
+                string deploymentHistoryJSONString = await _FileSystem.ReadAllText(Path.Combine(AppSettings.DeploymentHistoryLocation, project));
                 deploymentHistory = JsonConvert.DeserializeObject<List<DeploymentHistoryModel>>(deploymentHistoryJSONString) ?? [];
 
                 foreach (DeploymentHistoryModel deploy in deploymentHistory)
@@ -104,7 +104,7 @@ namespace DeploymentManager.Services
 
             try
             {
-                string deploymentHistoryJSONString = await _FileSystem.ReadAllText($@"{AppSettings.DeploymentHistoryLocation}\{project}");
+                string deploymentHistoryJSONString = await _FileSystem.ReadAllText(Path.Combine(AppSettings.DeploymentHistoryLocation, project));
                 List<DeploymentHistoryModel> deploymentHistory = JsonConvert.DeserializeObject<List<DeploymentHistoryModel>>(deploymentHistoryJSONString) ?? [];
 
                 deploymentHistory.Add(deployment);
@@ -112,7 +112,7 @@ namespace DeploymentManager.Services
 
                 deploymentHistoryJSONString = JsonConvert.SerializeObject(deploymentHistory);
 
-                await _FileSystem.WriteAllText($@"{AppSettings.DeploymentHistoryLocation}\{project}", deploymentHistoryJSONString);
+                await _FileSystem.WriteAllText(Path.Combine(AppSettings.DeploymentHistoryLocation, project), deploymentHistoryJSONString);
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,

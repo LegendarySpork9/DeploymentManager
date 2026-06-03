@@ -58,6 +58,7 @@ namespace DeploymentManager
             builder.Services.AddSingleton<IGitHubClient, GitHubClientWrapper>();
             builder.Services.AddSingleton<ApprovalService>();
             builder.Services.AddSingleton<GitHubService>();
+            builder.Services.AddSingleton<DocumentService>();
             builder.Services.AddHttpContextAccessor();
 
             _logger.LogMessage(

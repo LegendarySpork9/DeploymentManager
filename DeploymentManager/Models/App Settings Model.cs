@@ -11,6 +11,7 @@ namespace DeploymentManager.Models
         public string SiteAuth { get; set; }
         public string DeploymentHistoryLocation { get; set; }
         public string ApprovalCredentialLocation { get; set; }
+        public string ArtefactDownloadLocation { get; set; }
         public List<EnvironmentModel> Environments { get; set; }
         public GitHubOptionsModel GitHubOptions { get; set; }
         public List<ProjectModel> Projects { get; set; }
