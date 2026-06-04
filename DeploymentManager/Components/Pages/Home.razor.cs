@@ -17,11 +17,14 @@ namespace DeploymentManager.Components.Pages
         [Inject]
         private IISService _IISService { get; set; } = default!;
         [Inject]
+        private TaskSchedulerService _TaskSchedulerService { get; set; } = default!;
+        [Inject]
         private AppSettingsModel AppSettings { get; set; } = default!;
 
         private ApprovalDialog approvalDialog;
         private string Text;
         private string Text2;
+        private string Text3;
 
         private ArtefactModel Artifact;
 
@@ -127,6 +130,28 @@ namespace DeploymentManager.Components.Pages
                                 }
                             }
                         }
+                    }
+                }
+            }
+        }
+
+        private async Task StartMove()
+        {
+            if (!string.IsNullOrWhiteSpace(Text))
+            {
+                ProjectModel project = AppSettings.Projects.First(p => Text.Contains(p.GitHub.Artefact));
+
+                if (await _TaskSchedulerService.StopTask(
+                    project.Name,
+                    AppSettings.Environments[0].Device,
+                    null))
+                {
+                    if (await _TaskSchedulerService.StartTask(
+                        project.Name,
+                        AppSettings.Environments[0].Device,
+                        null))
+                    {
+                        Text3 = "Task Restarted";
                     }
                 }
             }
