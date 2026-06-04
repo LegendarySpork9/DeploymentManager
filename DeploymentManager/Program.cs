@@ -57,10 +57,12 @@ namespace DeploymentManager
             builder.Services.AddSingleton<IFileSystem, FileSystemWrapper>();
             builder.Services.AddSingleton<IGitHubClient, GitHubClientWrapper>();
             builder.Services.AddSingleton<IIISClient, IISClientWrapper>();
+            builder.Services.AddSingleton<ITaskScheduler, TaskSchedulerWrapper>();
             builder.Services.AddSingleton<ApprovalService>();
             builder.Services.AddSingleton<GitHubService>();
             builder.Services.AddSingleton<DocumentService>();
             builder.Services.AddSingleton<IISService>();
+            builder.Services.AddSingleton<TaskSchedulerService>();
             builder.Services.AddHttpContextAccessor();
 
             _logger.LogMessage(

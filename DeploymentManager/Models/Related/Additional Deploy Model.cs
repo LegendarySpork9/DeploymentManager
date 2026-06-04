@@ -7,6 +7,7 @@ namespace DeploymentManager.Models.Related
     public class AdditionalDeployModel
     {
         public required string Device { get; set; }
+        public DeviceAuthModel? Auth { get; set; }
         public required string Drive { get; set; }
         public required string Directory { get; set; }
     }
