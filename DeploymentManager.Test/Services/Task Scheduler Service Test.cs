@@ -26,11 +26,12 @@ namespace DeploymentManager.Test.Services
                 _MockLogger.Object,
                 _MockTaskScheduler.Object);
 
-            bool actual = await taskSchedulerService.StopTask(
+            (bool actual, string? errorMessage) = await taskSchedulerService.StopTask(
                 "Test Task",
                 "Test Device");
 
             Assert.IsTrue(actual);
+            Assert.IsNull(errorMessage);
 
             _MockTaskScheduler.Verify(
                 ts => ts.StopTask(
@@ -56,11 +57,12 @@ namespace DeploymentManager.Test.Services
                 _MockLogger.Object,
                 _MockTaskScheduler.Object);
 
-            bool actual = await taskSchedulerService.StopTask(
+            (bool actual, string? errorMessage) = await taskSchedulerService.StopTask(
                 "Test Task",
                 "Test Device");
 
             Assert.IsFalse(actual);
+            Assert.AreEqual("Task not found", errorMessage);
         }
 
         /// <summary>
@@ -78,11 +80,12 @@ namespace DeploymentManager.Test.Services
                 _MockLogger.Object,
                 _MockTaskScheduler.Object);
 
-            bool actual = await taskSchedulerService.StartTask(
+            (bool actual, string? errorMessage) = await taskSchedulerService.StartTask(
                 "Test Task",
                 "Test Device");
 
             Assert.IsTrue(actual);
+            Assert.IsNull(errorMessage);
 
             _MockTaskScheduler.Verify(
                 ts => ts.StartTask(
@@ -108,11 +111,12 @@ namespace DeploymentManager.Test.Services
                 _MockLogger.Object,
                 _MockTaskScheduler.Object);
 
-            bool actual = await taskSchedulerService.StartTask(
+            (bool actual, string? errorMessage) = await taskSchedulerService.StartTask(
                 "Test Task",
                 "Test Device");
 
             Assert.IsFalse(actual);
+            Assert.AreEqual("Task not found", errorMessage);
         }
     }
 }

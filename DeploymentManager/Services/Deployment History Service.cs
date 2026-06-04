@@ -1,10 +1,13 @@
 ﻿// Copyright © - Unpublished - Toby Hunter
 using DeploymentManager.Abstractions;
+using DeploymentManager.Entities;
 using DeploymentManager.Models;
 using DeploymentManager.Models.Data;
 using DeploymentManager.Models.Data.Related;
+using DeploymentManager.Models.Responses.Related;
 using DeploymentManager.Values;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace DeploymentManager.Services
 {
@@ -29,20 +32,22 @@ namespace DeploymentManager.Services
         /// <summary>
         /// Returns a list of deployment histories.
         /// </summary>
-        public async Task<List<DeploymentHistoryModel>> GetDeploymentHistory(string project)
+        public async Task<List<DeploymentHistoryModel<object>>> GetDeploymentHistory(string project)
         {
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
                 $"Fetching deployment history for project, {project}");
 
-            List<DeploymentHistoryModel> deploymentHistory = [];
+            List<DeploymentHistoryModel<object>> deploymentHistory = [];
 
             try
             {
-                string deploymentHistoryJSONString = await _FileSystem.ReadAllText(Path.Combine(AppSettings.DeploymentHistoryLocation, project));
-                deploymentHistory = JsonConvert.DeserializeObject<List<DeploymentHistoryModel>>(deploymentHistoryJSONString) ?? [];
+                string deploymentHistoryJSONString = await _FileSystem.ReadAllText(Path.Combine(
+                    AppSettings.DeploymentHistoryLocation,
+                    project));
+                deploymentHistory = JsonConvert.DeserializeObject<List<DeploymentHistoryModel<object>>>(deploymentHistoryJSONString) ?? [];
 
-                foreach (DeploymentHistoryModel deploy in deploymentHistory)
+                foreach (DeploymentHistoryModel<object> deploy in deploymentHistory)
                 {
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Info,
@@ -57,17 +62,35 @@ namespace DeploymentManager.Services
 
                     foreach (StageModel stage in deploy.Stages)
                     {
-                        deploy.StartDate = DateTime.SpecifyKind(
-                            deploy.StartDate,
+                        stage.StartDate = DateTime.SpecifyKind(
+                            stage.StartDate,
                             DateTimeKind.Utc);
-                        deploy.EndDate = DateTime.SpecifyKind(
-                            deploy.EndDate,
+                        stage.EndDate = DateTime.SpecifyKind(
+                            stage.EndDate,
                             DateTimeKind.Utc);
                     }
 
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Info,
                         $"Specified date times as UTC for deploment {deploy.Id}");
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Info,
+                        $"Converting artefact for deploment {deploy.Id}");
+
+                    if (deploy.DeploymentConfiguration.Artefact is JObject artefactJson)
+                    {
+                        deploy.DeploymentConfiguration.Artefact = deploy.ArtefactType switch
+                        {
+                            ArtefactType.Artefact => artefactJson.ToObject<ArtefactModel>()!,
+                            ArtefactType.ReleaseAsset => artefactJson.ToObject<AssetModel>()!,
+                            ArtefactType.Upload => artefactJson.ToObject<UploadFileModel>()!,
+                            _ => deploy.DeploymentConfiguration.Artefact
+                        };
+                    }
+
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Info,
+                        $"Converted artefact for deploment {deploy.Id}");
                 }
 
                 _Logger.LogMessage(
@@ -94,9 +117,9 @@ namespace DeploymentManager.Services
         /// <summary>
         /// Writes the deployment history.
         /// </summary>
-        public async Task WriteDeploymentHistory(
+        public async Task WriteDeploymentHistory<T>(
             string project,
-            DeploymentHistoryModel deployment)
+            DeploymentHistoryModel<T> deployment)
         {
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
@@ -104,15 +127,23 @@ namespace DeploymentManager.Services
 
             try
             {
-                string deploymentHistoryJSONString = await _FileSystem.ReadAllText(Path.Combine(AppSettings.DeploymentHistoryLocation, project));
-                List<DeploymentHistoryModel> deploymentHistory = JsonConvert.DeserializeObject<List<DeploymentHistoryModel>>(deploymentHistoryJSONString) ?? [];
+                string deploymentHistoryJSONString = await _FileSystem.ReadAllText(Path.Combine(
+                    AppSettings.DeploymentHistoryLocation,
+                    project));
+                List<DeploymentHistoryModel<object>> deploymentHistory = JsonConvert.DeserializeObject<List<DeploymentHistoryModel<object>>>(deploymentHistoryJSONString) ?? [];
 
-                deploymentHistory.Add(deployment);
-                deploymentHistory.OrderByDescending(dh => dh.Id);
+                string entryJson = JsonConvert.SerializeObject(deployment);
+                DeploymentHistoryModel<object> objectEntry = JsonConvert.DeserializeObject<DeploymentHistoryModel<object>>(entryJson)!;
+
+                deploymentHistory.Add(objectEntry);
+                deploymentHistory = [.. deploymentHistory.OrderByDescending(dh => dh.Id)];
 
                 deploymentHistoryJSONString = JsonConvert.SerializeObject(deploymentHistory);
 
-                await _FileSystem.WriteAllText(Path.Combine(AppSettings.DeploymentHistoryLocation, project), deploymentHistoryJSONString);
+                await _FileSystem.WriteAllText(Path.Combine(
+                    AppSettings.DeploymentHistoryLocation,
+                    project),
+                    deploymentHistoryJSONString);
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,

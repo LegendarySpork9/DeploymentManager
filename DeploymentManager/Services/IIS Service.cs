@@ -1,5 +1,6 @@
-﻿// Copyright © - Unpublished - Toby Hunter
+// Copyright © - Unpublished - Toby Hunter
 using DeploymentManager.Abstractions;
+using DeploymentManager.Models.Related;
 using DeploymentManager.Values;
 
 namespace DeploymentManager.Services
@@ -21,17 +22,24 @@ namespace DeploymentManager.Services
         /// <summary>
         /// Stops the given IIS site.
         /// </summary>
-        public async Task<bool> StopSite(string site)
+        public async Task<(bool, string?)> StopSite(
+            string site,
+            string device,
+            DeviceAuthModel? auth = null)
         {
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
                 $"Stopping IIS site, {site}");
 
             bool stopped = false;
+            string? errorMessage = null;
 
             try
             {
-                _IISClient.StopSite(site);
+                _IISClient.StopSite(
+                    site,
+                    device,
+                    auth);
 
                 stopped = true;
 
@@ -42,9 +50,11 @@ namespace DeploymentManager.Services
 
             catch (Exception ex)
             {
+                errorMessage = ex.Message;
+
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Warning,
-                    ex.Message);
+                    errorMessage);
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Error,
                     ex.ToString());
@@ -53,23 +63,30 @@ namespace DeploymentManager.Services
                     $"Failed to stop IIS site, {site}");
             }
 
-            return stopped;
+            return (stopped, errorMessage);
         }
 
         /// <summary>
         /// Starts the given IIS site.
         /// </summary>
-        public async Task<bool> StartSite(string site)
+        public async Task<(bool, string?)> StartSite(
+            string site,
+            string device,
+            DeviceAuthModel? auth = null)
         {
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
                 $"Starting IIS site, {site}");
 
             bool started = false;
+            string? errorMessage = null;
 
             try
             {
-                _IISClient.StartSite(site);
+                _IISClient.StartSite(
+                    site,
+                    device,
+                    auth);
 
                 started = true;
 
@@ -80,9 +97,11 @@ namespace DeploymentManager.Services
 
             catch (Exception ex)
             {
+                errorMessage = ex.Message;
+
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Warning,
-                    ex.Message);
+                    errorMessage);
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Error,
                     ex.ToString());
@@ -91,7 +110,7 @@ namespace DeploymentManager.Services
                     $"Failed to start IIS site, {site}");
             }
 
-            return started;
+            return (started, errorMessage);
         }
     }
 }

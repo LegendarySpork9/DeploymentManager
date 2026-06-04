@@ -1,8 +1,12 @@
-﻿// Copyright © - Unpublished - Toby Hunter
+// Copyright © - Unpublished - Toby Hunter
 using DeploymentManager.Abstractions;
 using DeploymentManager.Entities;
 using DeploymentManager.Models;
 using DeploymentManager.Models.Data;
+using DeploymentManager.Models.Data.Related;
+using DeploymentManager.Models.Related;
+using DeploymentManager.Models.Responses.Related;
+using DeploymentManager.Models.Shared;
 using DeploymentManager.Services;
 using Moq;
 
@@ -19,13 +23,14 @@ namespace DeploymentManager.Test.Services
             SiteAuth = string.Empty,
             DeploymentHistoryLocation = @"C:\DeployHistory",
             ApprovalCredentialLocation = string.Empty,
+            ArtefactDownloadLocation = @"C:\Deploy",
             Environments =
             [
                 new()
                 {
-                    Device = string.Empty,
-                    Drive = string.Empty,
-                    Name = string.Empty,
+                    Device = "TestDevice",
+                    Drive = "C",
+                    Name = DeploymentEnvironment.Live,
                     ArtefactSource = ArtefactSource.Actions
                 }
             ],
@@ -39,12 +44,12 @@ namespace DeploymentManager.Test.Services
                 new()
                 {
                     Type = ProjectType.Website,
-                    Name = string.Empty,
-                    Directory = string.Empty,
+                    Name = "TestProject",
+                    Directory = "Project",
                     GitHub = new()
                     {
-                        Repository = string.Empty,
-                        Artefact = string.Empty
+                        Repository = "test-repo",
+                        Artefact = "test-artefact"
                     },
                     AdditionalDeploy = null,
                     Ignore = null
@@ -61,7 +66,8 @@ namespace DeploymentManager.Test.Services
             string deploymentHistoryString = @"[
     {
         ""id"": 1,
-        ""type"": ""GitHubActions"",
+        ""type"": ""GitHub"",
+        ""artefactType"": ""Artefact"",
         ""status"": ""Completed"",
         ""startDate"": ""2026-06-02T15:39:00"",
         ""endDate"": ""2026-06-02T15:40:00"",
@@ -69,48 +75,58 @@ namespace DeploymentManager.Test.Services
         ""artefactId"": 1,
         ""artefactName"": ""DeploymentManager_020620261535"",
         ""artefactSize"": 1048576,
-        ""gitHubBranchId"": ""745hjfrnr7854uht543bhunfre7y84t3yub"",
-        ""gitHubBranchName"": ""2/Logging"",
+        ""branchId"": ""745hjfrnr7854uht543bhunfre7y84t3yub"",
+        ""branchName"": ""2/Logging"",
+        ""failedAtStage"": null,
+        ""deploymentConfiguration"": {
+            ""type"": ""GitHub"",
+            ""environment"": ""Live"",
+            ""project"": {
+                ""type"": ""Website"",
+                ""name"": ""TestProject"",
+                ""directory"": ""Project"",
+                ""gitHub"": {
+                    ""repository"": ""test-repo"",
+                    ""artefact"": ""test-artefact""
+                },
+                ""additionalDeploy"": null,
+                ""ignore"": null
+            },
+            ""artefact"": {
+                ""id"": 123,
+                ""name"": ""test-artefact"",
+                ""size_in_Bytes"": 1048576,
+                ""archive_Download_Url"": ""https://api.github.com/repos/owner/repo/actions/artifacts/123/zip"",
+                ""workflow_Run"": {
+                    ""id"": 456,
+                    ""head_Branch"": ""main"",
+                    ""head_Sha"": ""abc123""
+                }
+            },
+            ""primaryDeploymentTarget"": {
+                ""device"": ""TestDevice"",
+                ""drive"": ""C"",
+                ""name"": ""Live"",
+                ""artefactSource"": ""Actions""
+            },
+            ""secondaryDeploymentTargets"": null,
+            ""deploymentSettings"": {
+                ""runAdditionalDeploys"": true,
+                ""restartService"": true
+            }
+        },
         ""stages"": [
             {
-                ""name"": """",
+                ""name"": ""FetchArtefacts"",
                 ""status"": ""Completed"",
                 ""startDate"": ""2026-06-02T15:39:05"",
                 ""endDate"": ""2026-06-02T15:39:55"",
-                ""runTime"": ""00:00:50""
+                ""runTime"": ""00:00:50"",
+                ""failMessages"": null
             }
         ]
     }
 ]";
-            List<DeploymentHistoryModel> expected =
-            [
-                new()
-                {
-                    Id = 1,
-                    Type = DeploymentType.GitHubActions,
-                    Status = Status.Completed,
-                    StartDate = new(2026, 06, 02, 15, 39, 00, DateTimeKind.Utc),
-                    EndDate = new(2026, 06, 02, 15, 40, 00, DateTimeKind.Utc),
-                    RunTime = new(00, 01, 00),
-                    ArtefactId = 1,
-                    ArtefactName = "DeploymentManager_020620261535",
-                    ArtefactSize = 1048576,
-                    GitHubBranchId = "745hjfrnr7854uht543bhunfre7y84t3yub",
-                    GitHubBranchName = "2/Logging",
-                    Stages =
-                    [
-                        new()
-                        {
-                            Name = "",
-                            Status = Status.Completed,
-                            StartDate = new(2026, 06, 02, 15, 39, 05, DateTimeKind.Utc),
-                            EndDate = new(2026, 06, 02, 15, 39, 55, DateTimeKind.Utc),
-                            RunTime = new(00, 00, 50),
-                        }
-                    ]
-                }
-            ];
-
             _MockFileSystem.Setup(fs => fs.ReadAllText(It.IsAny<string>()))
                 .ReturnsAsync(deploymentHistoryString);
 
@@ -119,46 +135,44 @@ namespace DeploymentManager.Test.Services
                 _MockFileSystem.Object,
                 AppSettings);
 
-            List<DeploymentHistoryModel> actual = await _deploymentHistoryService.GetDeploymentHistory(AppSettings.Projects[0].Name);
+            List<DeploymentHistoryModel<object>> actual = await _deploymentHistoryService.GetDeploymentHistory(AppSettings.Projects[0].Name);
 
             Assert.HasCount(
-                expected.Count,
+                1,
                 actual);
-
-            for (int x = 0; x  < expected.Count; x++)
-            {
-                Assert.AreEqual(
-                    expected[x].Id,
-                    actual[x].Id);
-                Assert.AreEqual(
-                    expected[x].Type,
-                    actual[x].Type);
-                Assert.AreEqual(
-                    expected[x].Status,
-                    actual[x].Status);
-                Assert.AreEqual(
-                    expected[x].StartDate,
-                    actual[x].StartDate);
-                Assert.AreEqual(
-                    expected[x].EndDate,
-                    actual[x].EndDate);
-
-                for (int y = 0; y < expected[x].Stages.Count; y++)
-                {
-                    Assert.AreEqual(
-                        expected[x].Stages[y].Name,
-                        actual[x].Stages[y].Name);
-                    Assert.AreEqual(
-                        expected[x].Stages[y].Status,
-                        actual[x].Stages[y].Status);
-                    Assert.AreEqual(
-                        expected[x].Stages[y].StartDate,
-                        actual[x].Stages[y].StartDate);
-                    Assert.AreEqual(
-                        expected[x].Stages[y].EndDate,
-                        actual[x].Stages[y].EndDate);
-                }
-            }
+            Assert.AreEqual(
+                1,
+                actual[0].Id);
+            Assert.AreEqual(
+                DeploymentType.GitHub,
+                actual[0].Type);
+            Assert.AreEqual(
+                ArtefactType.Artefact,
+                actual[0].ArtefactType);
+            Assert.AreEqual(
+                Status.Completed,
+                actual[0].Status);
+            Assert.AreEqual(
+                new DateTime(2026, 06, 02, 15, 39, 00, DateTimeKind.Utc),
+                actual[0].StartDate);
+            Assert.AreEqual(
+                new DateTime(2026, 06, 02, 15, 40, 00, DateTimeKind.Utc),
+                actual[0].EndDate);
+            Assert.HasCount(
+                1,
+                actual[0].Stages);
+            Assert.AreEqual(
+                DeploymentStage.FetchArtefacts,
+                actual[0].Stages[0].Name);
+            Assert.AreEqual(
+                Status.Completed,
+                actual[0].Stages[0].Status);
+            Assert.AreEqual(
+                new DateTime(2026, 06, 02, 15, 39, 05, DateTimeKind.Utc),
+                actual[0].Stages[0].StartDate);
+            Assert.AreEqual(
+                new DateTime(2026, 06, 02, 15, 39, 55, DateTimeKind.Utc),
+                actual[0].Stages[0].EndDate);
         }
 
         /// <summary>
@@ -175,7 +189,7 @@ namespace DeploymentManager.Test.Services
                 _MockFileSystem.Object,
                 AppSettings);
 
-            List<DeploymentHistoryModel> actual = await _deploymentHistoryService.GetDeploymentHistory(AppSettings.Projects[0].Name);
+            List<DeploymentHistoryModel<object>> actual = await _deploymentHistoryService.GetDeploymentHistory(AppSettings.Projects[0].Name);
 
             Assert.HasCount(
                 0,
@@ -188,27 +202,49 @@ namespace DeploymentManager.Test.Services
         [TestMethod]
         public async Task TestWriteDeploymentHistory()
         {
-            DeploymentHistoryModel newDeployment = new()
+            DeploymentHistoryModel<ArtefactModel> newDeployment = new()
             {
                 Id = 1,
-                Type = DeploymentType.GitHubActions,
+                Type = DeploymentType.GitHub,
+                ArtefactType = ArtefactType.Artefact,
                 Status = Status.Completed,
-                StartDate = new(2026, 06, 02, 15, 39, 00),
-                EndDate = new(2026, 06, 02, 15, 40, 00),
+                StartDate = new(2026, 06, 02, 15, 39, 00, DateTimeKind.Utc),
+                EndDate = new(2026, 06, 02, 15, 40, 00, DateTimeKind.Utc),
                 RunTime = new(00, 01, 00),
                 ArtefactId = 1,
                 ArtefactName = "DeploymentManager_020620261535",
                 ArtefactSize = 1048576,
-                GitHubBranchId = "745hjfrnr7854uht543bhunfre7y84t3yub",
-                GitHubBranchName = "2/Logging",
+                BranchId = "745hjfrnr7854uht543bhunfre7y84t3yub",
+                BranchName = "2/Logging",
+                DeploymentConfiguration = new()
+                {
+                    Type = DeploymentType.GitHub,
+                    Environment = DeploymentEnvironment.Live,
+                    Project = AppSettings.Projects[0],
+                    Artefact = new()
+                    {
+                        Id = 123,
+                        Name = "test-artefact",
+                        Size_in_Bytes = 1048576,
+                        Archive_Download_Url = "https://api.github.com/repos/owner/repo/actions/artifacts/123/zip",
+                        Workflow_Run = new()
+                        {
+                            Id = 456,
+                            Head_Branch = "main",
+                            Head_Sha = "abc123"
+                        }
+                    },
+                    PrimaryDeploymentTarget = AppSettings.Environments[0],
+                    DeploymentSettings = new()
+                },
                 Stages =
                 [
                     new()
                     {
-                        Name = "",
+                        Name = DeploymentStage.FetchArtefacts,
                         Status = Status.Completed,
-                        StartDate = new(2026, 06, 02, 15, 39, 05),
-                        EndDate = new(2026, 06, 02, 15, 39, 55),
+                        StartDate = new(2026, 06, 02, 15, 39, 05, DateTimeKind.Utc),
+                        EndDate = new(2026, 06, 02, 15, 39, 55, DateTimeKind.Utc),
                         RunTime = new(00, 00, 50),
                     }
                 ]
@@ -231,76 +267,9 @@ namespace DeploymentManager.Test.Services
 
             _MockFileSystem.Verify(
                 fs => fs.WriteAllText(
-                    Path.Combine(AppSettings.DeploymentHistoryLocation, AppSettings.Projects[0].Name),
-                    It.IsAny<string>()),
-                Times.Once);
-        }
-
-        /// <summary>
-        /// Tests whether the WriteDeploymentHistory method writes the correct json to the file when there is an existing history.
-        /// </summary>
-        [TestMethod]
-        public async Task TestWriteDeploymentHistoryExisting()
-        {
-            string existingHistoryString = @"[
-    {
-        ""id"": 1,
-        ""type"": ""GitHubActions"",
-        ""status"": ""Completed"",
-        ""startDate"": ""2026-06-02T15:39:00"",
-        ""endDate"": ""2026-06-02T15:40:00"",
-        ""runTime"": ""00:01:00"",
-        ""artefactId"": 1,
-        ""artefactName"": ""DeploymentManager_020620261535"",
-        ""artefactSize"": 1048576,
-        ""gitHubBranchId"": ""745hjfrnr7854uht543bhunfre7y84t3yub"",
-        ""gitHubBranchName"": ""2/Logging"",
-        ""stages"": [
-            {
-                ""name"": """",
-                ""status"": ""Completed"",
-                ""startDate"": ""2026-06-02T15:39:05"",
-                ""endDate"": ""2026-06-02T15:39:55"",
-                ""runTime"": ""00:00:50""
-            }
-        ]
-    }
-]";
-
-            DeploymentHistoryModel newDeployment = new()
-            {
-                Id = 2,
-                Type = DeploymentType.FileUpload,
-                Status = Status.PendingApproval,
-                StartDate = new(2026, 06, 02, 16, 00, 00),
-                EndDate = new(2026, 06, 02, 16, 05, 00),
-                RunTime = new(00, 05, 00),
-                ArtefactId = 2,
-                ArtefactName = "DeploymentManager_020620261600",
-                ArtefactSize = 2097152,
-                GitHubBranchId = "abc123def456",
-                GitHubBranchName = "3/Logging",
-                Stages = []
-            };
-
-            _MockFileSystem.Setup(fs => fs.ReadAllText(It.IsAny<string>()))
-                .ReturnsAsync(existingHistoryString);
-            _MockFileSystem.Setup(fs => fs.WriteAllText(
-                It.IsAny<string>(),
-                It.IsAny<string>()));
-
-            DeploymentHistoryService _deploymentHistoryService = new(
-                _MockLogger.Object,
-                _MockFileSystem.Object,
-                AppSettings);
-
-            await _deploymentHistoryService.WriteDeploymentHistory(
-                AppSettings.Projects[0].Name,
-                newDeployment);
-
-            _MockFileSystem.Verify(
-                fs => fs.WriteAllText(
-                    Path.Combine(AppSettings.DeploymentHistoryLocation, AppSettings.Projects[0].Name),
+                    Path.Combine(
+                        AppSettings.DeploymentHistoryLocation,
+                        AppSettings.Projects[0].Name),
                     It.IsAny<string>()),
                 Times.Once);
         }

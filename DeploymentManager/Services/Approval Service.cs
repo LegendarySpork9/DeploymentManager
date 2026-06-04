@@ -168,7 +168,9 @@ namespace DeploymentManager.Services
                 string credentialJson = JsonConvert.SerializeObject(credential);
 
                 await _FileSystem.WriteAllText(
-                    Path.Combine(AppSettings.ApprovalCredentialLocation, "credential.json"),
+                    Path.Combine(
+                        AppSettings.ApprovalCredentialLocation,
+                        "credential.json"),
                     credentialJson);
 
                 _Logger.LogMessage(
@@ -203,7 +205,9 @@ namespace DeploymentManager.Services
 
             try
             {
-                string filePath = Path.Combine(AppSettings.ApprovalCredentialLocation, "credential.json");
+                string filePath = Path.Combine(
+                    AppSettings.ApprovalCredentialLocation,
+                    "credential.json");
                 string credentialJson = await _FileSystem.ReadAllText(filePath);
 
                 authenticatorCredential = JsonConvert.DeserializeObject<AuthenticatorCredentialModel>(credentialJson);

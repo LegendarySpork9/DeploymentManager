@@ -7,8 +7,10 @@ namespace DeploymentManager.Entities
     public enum Status
     {
         PendingApproval,
+        NotStarted,
         Running,
         Completed,
+        Skipped,
         Failed
     }
 }

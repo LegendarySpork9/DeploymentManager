@@ -136,13 +136,13 @@ namespace DeploymentManager.Test.Services
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<string>()))
-                .ReturnsAsync(expectedPath);
+                .ReturnsAsync((expectedPath, (string?)null));
 
             GitHubService gitHubService = new(
                 _MockLogger.Object,
                 _MockGitHubClient.Object);
 
-            string actual = await gitHubService.DownloadArtefact(
+            (string actual, string? errorMessage) = await gitHubService.DownloadArtefact(
                 @"C:\Deploy",
                 artefact,
                 "Test");
@@ -150,6 +150,7 @@ namespace DeploymentManager.Test.Services
             Assert.AreEqual(
                 expectedPath,
                 actual);
+            Assert.IsNull(errorMessage);
         }
 
         /// <summary>
@@ -176,25 +177,26 @@ namespace DeploymentManager.Test.Services
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<string>()))
-                .ReturnsAsync(string.Empty);
+                .ReturnsAsync((string.Empty, (string?)null));
 
             GitHubService gitHubService = new(
                 _MockLogger.Object,
                 _MockGitHubClient.Object);
 
-            string actual = await gitHubService.DownloadArtefact(
+            (string actual, string? errorMessage) = await gitHubService.DownloadArtefact(
                 @"C:\Deploy",
                 artefact,
                 "Test");
 
             Assert.IsEmpty(actual);
+            Assert.IsNull(errorMessage);
         }
 
         /// <summary>
-        /// Tests whether the DownloadArtefact method returns an empty string when the client throws an exception.
+        /// Tests whether the DownloadArtefact method passes through the error message from the client.
         /// </summary>
         [TestMethod]
-        public async Task TestDownloadArtefactException()
+        public async Task TestDownloadArtefactReturnsError()
         {
             ArtefactModel artefact = new()
             {
@@ -214,18 +216,19 @@ namespace DeploymentManager.Test.Services
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<string>()))
-                .ThrowsAsync(new HttpRequestException("Connection failed"));
+                .ReturnsAsync((string.Empty, (string?)"Connection failed"));
 
             GitHubService gitHubService = new(
                 _MockLogger.Object,
                 _MockGitHubClient.Object);
 
-            string actual = await gitHubService.DownloadArtefact(
+            (string actual, string? errorMessage) = await gitHubService.DownloadArtefact(
                 @"C:\Deploy",
                 artefact,
                 "Test");
 
             Assert.IsEmpty(actual);
+            Assert.AreEqual("Connection failed", errorMessage);
         }
 
         /// <summary>
@@ -328,13 +331,13 @@ namespace DeploymentManager.Test.Services
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<string>()))
-                .ReturnsAsync(expectedPath);
+                .ReturnsAsync((expectedPath, (string?)null));
 
             GitHubService gitHubService = new(
                 _MockLogger.Object,
                 _MockGitHubClient.Object);
 
-            string actual = await gitHubService.DownloadReleaseAsset(
+            (string actual, string? errorMessage) = await gitHubService.DownloadReleaseAsset(
                 @"C:\Deploy",
                 asset,
                 "Test");
@@ -342,6 +345,7 @@ namespace DeploymentManager.Test.Services
             Assert.AreEqual(
                 expectedPath,
                 actual);
+            Assert.IsNull(errorMessage);
         }
 
         /// <summary>
@@ -363,25 +367,26 @@ namespace DeploymentManager.Test.Services
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<string>()))
-                .ReturnsAsync(string.Empty);
+                .ReturnsAsync((string.Empty, (string?)null));
 
             GitHubService gitHubService = new(
                 _MockLogger.Object,
                 _MockGitHubClient.Object);
 
-            string actual = await gitHubService.DownloadReleaseAsset(
+            (string actual, string? errorMessage) = await gitHubService.DownloadReleaseAsset(
                 @"C:\Deploy",
                 asset,
                 "Test");
 
             Assert.IsEmpty(actual);
+            Assert.IsNull(errorMessage);
         }
 
         /// <summary>
-        /// Tests whether the DownloadReleaseAsset method returns an empty string when the client throws an exception.
+        /// Tests whether the DownloadReleaseAsset method passes through the error message from the client.
         /// </summary>
         [TestMethod]
-        public async Task TestDownloadReleaseAssetException()
+        public async Task TestDownloadReleaseAssetReturnsError()
         {
             AssetModel asset = new()
             {
@@ -396,18 +401,19 @@ namespace DeploymentManager.Test.Services
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<string>()))
-                .ThrowsAsync(new HttpRequestException("Connection failed"));
+                .ReturnsAsync((string.Empty, (string?)"Connection failed"));
 
             GitHubService gitHubService = new(
                 _MockLogger.Object,
                 _MockGitHubClient.Object);
 
-            string actual = await gitHubService.DownloadReleaseAsset(
+            (string actual, string? errorMessage) = await gitHubService.DownloadReleaseAsset(
                 @"C:\Deploy",
                 asset,
                 "Test");
 
             Assert.IsEmpty(actual);
+            Assert.AreEqual("Connection failed", errorMessage);
         }
     }
 }

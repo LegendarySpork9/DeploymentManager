@@ -1,4 +1,6 @@
 ﻿// Copyright © - Unpublished - Toby Hunter
+using DeploymentManager.Models.Related;
+
 namespace DeploymentManager.Abstractions
 {
     /// <summary>
@@ -6,7 +8,7 @@ namespace DeploymentManager.Abstractions
     /// </summary>
     public interface IIISClient
     {
-        void StopSite(string site);
-        void StartSite(string site);
+        void StopSite(string site, string device, DeviceAuthModel? auth = null);
+        void StartSite(string site, string device, DeviceAuthModel? auth = null);
     }
 }

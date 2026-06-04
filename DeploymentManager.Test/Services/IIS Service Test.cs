@@ -1,5 +1,6 @@
 // Copyright © - Unpublished - Toby Hunter
 using DeploymentManager.Abstractions;
+using DeploymentManager.Models.Related;
 using DeploymentManager.Services;
 using Moq;
 
@@ -17,18 +18,22 @@ namespace DeploymentManager.Test.Services
         [TestMethod]
         public async Task TestStopSiteReturnsTrue()
         {
-            _MockIISClient.Setup(iis => iis.StopSite(It.IsAny<string>()));
+            _MockIISClient.Setup(iis => iis.StopSite(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<DeviceAuthModel?>()));
 
             IISService iisService = new(
                 _MockLogger.Object,
                 _MockIISClient.Object);
 
-            bool actual = await iisService.StopSite("Test Site");
+            (bool actual, string? errorMessage) = await iisService.StopSite("Test Site", "TestDevice");
 
             Assert.IsTrue(actual);
+            Assert.IsNull(errorMessage);
 
             _MockIISClient.Verify(
-                iis => iis.StopSite("Test Site"),
+                iis => iis.StopSite("Test Site", "TestDevice", null),
                 Times.Once);
         }
 
@@ -38,16 +43,20 @@ namespace DeploymentManager.Test.Services
         [TestMethod]
         public async Task TestStopSiteException()
         {
-            _MockIISClient.Setup(iis => iis.StopSite(It.IsAny<string>()))
+            _MockIISClient.Setup(iis => iis.StopSite(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<DeviceAuthModel?>()))
                 .Throws(new Exception("Site not found"));
 
             IISService iisService = new(
                 _MockLogger.Object,
                 _MockIISClient.Object);
 
-            bool actual = await iisService.StopSite("Test Site");
+            (bool actual, string? errorMessage) = await iisService.StopSite("Test Site", "TestDevice");
 
             Assert.IsFalse(actual);
+            Assert.AreEqual("Site not found", errorMessage);
         }
 
         /// <summary>
@@ -56,18 +65,22 @@ namespace DeploymentManager.Test.Services
         [TestMethod]
         public async Task TestStartSiteReturnsTrue()
         {
-            _MockIISClient.Setup(iis => iis.StartSite(It.IsAny<string>()));
+            _MockIISClient.Setup(iis => iis.StartSite(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<DeviceAuthModel?>()));
 
             IISService iisService = new(
                 _MockLogger.Object,
                 _MockIISClient.Object);
 
-            bool actual = await iisService.StartSite("Test Site");
+            (bool actual, string? errorMessage) = await iisService.StartSite("Test Site", "TestDevice");
 
             Assert.IsTrue(actual);
+            Assert.IsNull(errorMessage);
 
             _MockIISClient.Verify(
-                iis => iis.StartSite("Test Site"),
+                iis => iis.StartSite("Test Site", "TestDevice", null),
                 Times.Once);
         }
 
@@ -77,16 +90,20 @@ namespace DeploymentManager.Test.Services
         [TestMethod]
         public async Task TestStartSiteException()
         {
-            _MockIISClient.Setup(iis => iis.StartSite(It.IsAny<string>()))
+            _MockIISClient.Setup(iis => iis.StartSite(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<DeviceAuthModel?>()))
                 .Throws(new Exception("Site not found"));
 
             IISService iisService = new(
                 _MockLogger.Object,
                 _MockIISClient.Object);
 
-            bool actual = await iisService.StartSite("Test Site");
+            (bool actual, string? errorMessage) = await iisService.StartSite("Test Site", "TestDevice");
 
             Assert.IsFalse(actual);
+            Assert.AreEqual("Site not found", errorMessage);
         }
     }
 }

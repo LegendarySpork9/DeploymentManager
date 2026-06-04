@@ -2,15 +2,16 @@
 namespace DeploymentManager.Entities
 {
     /// <summary>
-    /// Stages of Deployment
+    /// Stages of Deployment.
     /// </summary>
     public enum DeploymentStage
     {
         FetchArtefacts,
         ExtractArtefacts,
-        StopService,
+        FetchArtefactFiles,
+        StopServices,
         MoveArtefacts,
-        StartService,
+        StartServices,
         CleanArtefacts
     }
 }

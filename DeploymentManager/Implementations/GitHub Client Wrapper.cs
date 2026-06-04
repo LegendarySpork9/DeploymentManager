@@ -96,12 +96,13 @@ namespace DeploymentManager.Implementations
         /// <summary>
         /// Downloads the given artefact from the API.
         /// </summary>
-        public async Task<string> DownloadArtefact(
+        public async Task<(string, string?)> DownloadArtefact(
             string downloadURL,
             string downloadPath,
             string downloadFile)
         {
             string downloadedFile = string.Empty;
+            string? errorMessage = null;
 
             try
             {
@@ -142,24 +143,30 @@ namespace DeploymentManager.Implementations
                         "Downloading File");
 
                     await _FileSystem.WriteStream(
-                        Path.Combine(downloadPath, downloadFile),
+                        Path.Combine(
+                            downloadPath,
+                            downloadFile),
                         stream);
                 }
 
-                downloadedFile = Path.Combine(downloadPath, downloadFile);
+                downloadedFile = Path.Combine(
+                    downloadPath,
+                    downloadFile);
             }
 
             catch (Exception ex)
             {
+                errorMessage = ex.Message;
+
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Warning,
-                    ex.Message);
+                    errorMessage);
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Error,
                     ex.ToString());
             }
 
-            return downloadedFile;
+            return (downloadedFile, errorMessage);
         }
 
         /// <summary>
@@ -235,12 +242,13 @@ namespace DeploymentManager.Implementations
         /// <summary>
         /// Downloads the given release asset from the API.
         /// </summary>
-        public async Task<string> DownloadReleaseAsset(
+        public async Task<(string, string?)> DownloadReleaseAsset(
             string downloadURL,
             string downloadPath,
             string downloadFile)
         {
             string downloadedFile = string.Empty;
+            string? errorMessage = null;
 
             try
             {
@@ -272,24 +280,30 @@ namespace DeploymentManager.Implementations
                         "Downloading File");
 
                     await _FileSystem.WriteStream(
-                        Path.Combine(downloadPath, downloadFile),
+                        Path.Combine(
+                            downloadPath,
+                            downloadFile),
                         stream);
                 }
 
-                downloadedFile = Path.Combine(downloadPath, downloadFile);
+                downloadedFile = Path.Combine(
+                    downloadPath,
+                    downloadFile);
             }
 
             catch (Exception ex)
             {
+                errorMessage = ex.ToString();
+
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Warning,
-                    ex.Message);
+                    errorMessage);
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Error,
                     ex.ToString());
             }
 
-            return downloadedFile;
+            return (downloadedFile, errorMessage);
         }
 
         /// <summary>

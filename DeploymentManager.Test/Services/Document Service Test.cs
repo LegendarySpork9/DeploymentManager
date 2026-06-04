@@ -1,5 +1,6 @@
 // Copyright © - Unpublished - Toby Hunter
 using DeploymentManager.Abstractions;
+using DeploymentManager.Models.Data.Related;
 using DeploymentManager.Services;
 using Moq;
 
@@ -37,11 +38,12 @@ namespace DeploymentManager.Test.Services
                 _MockLogger.Object,
                 _MockFileSystem.Object);
 
-            bool actual = await documentService.ExtractArtefact(
+            (bool actual, string? errorMessage) = await documentService.ExtractArtefact(
                 @"C:\Deploy\test-artefact.zip",
                 @"C:\Deploy\test-artefact");
 
             Assert.IsTrue(actual);
+            Assert.IsNull(errorMessage);
 
             _MockFileSystem.Verify(
                 fs => fs.ReadStream(@"C:\Deploy\test-artefact.zip"),
@@ -66,11 +68,12 @@ namespace DeploymentManager.Test.Services
                 _MockLogger.Object,
                 _MockFileSystem.Object);
 
-            bool actual = await documentService.ExtractArtefact(
+            (bool actual, string? errorMessage) = await documentService.ExtractArtefact(
                 @"C:\Deploy\test-artefact.zip",
                 @"C:\Deploy\test-artefact");
 
             Assert.IsFalse(actual);
+            Assert.AreEqual("File not found", errorMessage);
         }
 
         /// <summary>
@@ -92,7 +95,7 @@ namespace DeploymentManager.Test.Services
                 _MockLogger.Object,
                 _MockFileSystem.Object);
 
-            string[] actual = await documentService.GetExtractedArtefactFiles(
+            (string[] actual, string? errorMessage) = await documentService.GetExtractedArtefactFiles(
                 "test-artefact",
                 @"C:\Deploy\test-artefact");
 
@@ -105,6 +108,7 @@ namespace DeploymentManager.Test.Services
             Assert.AreEqual(
                 expected[1],
                 actual[1]);
+            Assert.IsNull(errorMessage);
         }
 
         /// <summary>
@@ -120,12 +124,12 @@ namespace DeploymentManager.Test.Services
                 _MockLogger.Object,
                 _MockFileSystem.Object);
 
-            string[] actual = await documentService.GetExtractedArtefactFiles(
+            (string[] actual, string? errorMessage) = await documentService.GetExtractedArtefactFiles(
                 "test-artefact",
                 @"C:\Deploy\test-artefact");
 
-            Assert.IsEmpty(
-                actual);
+            Assert.IsEmpty(actual);
+            Assert.AreEqual("Directory not found", errorMessage);
         }
 
         /// <summary>
@@ -134,10 +138,10 @@ namespace DeploymentManager.Test.Services
         [TestMethod]
         public async Task TestMoveArtefactFilesReturnsTrue()
         {
-            List<(string, KeyValuePair<string, string>)> files =
+            List<ArtefactFileModel> files =
             [
-                ("file1.dll", new(@"C:\Deploy\test-artefact\file1.dll", @"C:\Project\file1.dll")),
-                ("file2.dll", new(@"C:\Deploy\test-artefact\file2.dll", @"C:\Project\file2.dll"))
+                new() { Name = "file1.dll", Paths = new(@"C:\Deploy\test-artefact\file1.dll", @"C:\Project\file1.dll") },
+                new() { Name = "file2.dll", Paths = new(@"C:\Deploy\test-artefact\file2.dll", @"C:\Project\file2.dll") }
             ];
 
             _MockFileSystem.Setup(fs => fs.CheckDirectory(It.IsAny<string>()))
@@ -152,12 +156,14 @@ namespace DeploymentManager.Test.Services
                 _MockLogger.Object,
                 _MockFileSystem.Object);
 
-            bool actual = await documentService.MoveArtefactFiles(
+            (bool actual, List<string> errorMessages) = await documentService.MoveArtefactFiles(
                 "test-artefact",
                 @"C:\Project",
+                "TestDevice",
                 files);
 
             Assert.IsTrue(actual);
+            Assert.IsEmpty(errorMessages);
 
             _MockFileSystem.Verify(
                 fs => fs.CopyFile(
@@ -175,9 +181,9 @@ namespace DeploymentManager.Test.Services
         [TestMethod]
         public async Task TestMoveArtefactFilesCreatesDirectory()
         {
-            List<(string, KeyValuePair<string, string>)> files =
+            List<ArtefactFileModel> files =
             [
-                ("file1.dll", new(@"C:\Deploy\test-artefact\file1.dll", @"C:\Project\sub\file1.dll"))
+                new() { Name = "file1.dll", Paths = new(@"C:\Deploy\test-artefact\file1.dll", @"C:\Project\sub\file1.dll") }
             ];
 
             _MockFileSystem.Setup(fs => fs.CheckDirectory(@"C:\Project\sub"))
@@ -195,12 +201,14 @@ namespace DeploymentManager.Test.Services
                 _MockLogger.Object,
                 _MockFileSystem.Object);
 
-            bool actual = await documentService.MoveArtefactFiles(
+            (bool actual, List<string> errorMessages) = await documentService.MoveArtefactFiles(
                 "test-artefact",
                 @"C:\Project",
+                "TestDevice",
                 files);
 
             Assert.IsTrue(actual);
+            Assert.IsEmpty(errorMessages);
 
             _MockFileSystem.Verify(
                 fs => fs.CreateDirectory(@"C:\Project\sub"),
@@ -213,10 +221,10 @@ namespace DeploymentManager.Test.Services
         [TestMethod]
         public async Task TestMoveArtefactFilesReturnsFalse()
         {
-            List<(string, KeyValuePair<string, string>)> files =
+            List<ArtefactFileModel> files =
             [
-                ("file1.dll", new(@"C:\Deploy\test-artefact\file1.dll", @"C:\Project\file1.dll")),
-                ("file2.dll", new(@"C:\Deploy\test-artefact\file2.dll", @"C:\Project\file2.dll"))
+                new() { Name = "file1.dll", Paths = new(@"C:\Deploy\test-artefact\file1.dll", @"C:\Project\file1.dll") },
+                new() { Name = "file2.dll", Paths = new(@"C:\Deploy\test-artefact\file2.dll", @"C:\Project\file2.dll") }
             ];
 
             _MockFileSystem.Setup(fs => fs.CheckDirectory(It.IsAny<string>()))
@@ -232,12 +240,14 @@ namespace DeploymentManager.Test.Services
                 _MockLogger.Object,
                 _MockFileSystem.Object);
 
-            bool actual = await documentService.MoveArtefactFiles(
+            (bool actual, List<string> errorMessages) = await documentService.MoveArtefactFiles(
                 "test-artefact",
                 @"C:\Project",
+                "TestDevice",
                 files);
 
             Assert.IsFalse(actual);
+            Assert.HasCount(1, errorMessages);
         }
 
         /// <summary>
@@ -246,18 +256,20 @@ namespace DeploymentManager.Test.Services
         [TestMethod]
         public async Task TestMoveArtefactFilesEmptyList()
         {
-            List<(string, KeyValuePair<string, string>)> files = [];
+            List<ArtefactFileModel> files = [];
 
             DocumentService documentService = new(
                 _MockLogger.Object,
                 _MockFileSystem.Object);
 
-            bool actual = await documentService.MoveArtefactFiles(
+            (bool actual, List<string> errorMessages) = await documentService.MoveArtefactFiles(
                 "test-artefact",
                 @"C:\Project",
+                "TestDevice",
                 files);
 
             Assert.IsTrue(actual);
+            Assert.IsEmpty(errorMessages);
 
             _MockFileSystem.Verify(
                 fs => fs.CopyFile(
@@ -282,12 +294,13 @@ namespace DeploymentManager.Test.Services
                 _MockLogger.Object,
                 _MockFileSystem.Object);
 
-            bool actual = await documentService.DeleteArtefact(
+            (bool actual, string? errorMessage) = await documentService.DeleteArtefact(
                 "test-artefact",
                 @"C:\Deploy\test-artefact.zip",
                 @"C:\Deploy\test-artefact");
 
             Assert.IsTrue(actual);
+            Assert.IsNull(errorMessage);
 
             _MockFileSystem.Verify(
                 fs => fs.DeleteDirectory(@"C:\Deploy\test-artefact"),
@@ -310,12 +323,13 @@ namespace DeploymentManager.Test.Services
                 _MockLogger.Object,
                 _MockFileSystem.Object);
 
-            bool actual = await documentService.DeleteArtefact(
+            (bool actual, string? errorMessage) = await documentService.DeleteArtefact(
                 "test-artefact",
                 @"C:\Deploy\test-artefact.zip",
                 @"C:\Deploy\test-artefact");
 
             Assert.IsFalse(actual);
+            Assert.AreEqual("Directory in use", errorMessage);
         }
 
         /// <summary>
@@ -334,12 +348,13 @@ namespace DeploymentManager.Test.Services
                 _MockLogger.Object,
                 _MockFileSystem.Object);
 
-            bool actual = await documentService.DeleteArtefact(
+            (bool actual, string? errorMessage) = await documentService.DeleteArtefact(
                 "test-artefact",
                 @"C:\Deploy\test-artefact.zip",
                 @"C:\Deploy\test-artefact");
 
             Assert.IsFalse(actual);
+            Assert.AreEqual("File in use", errorMessage);
         }
     }
 }
