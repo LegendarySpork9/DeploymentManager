@@ -25,7 +25,7 @@ namespace DeploymentManager.Test.Services
                 {
                     Device = string.Empty,
                     Drive = string.Empty,
-                    Name = string.Empty,
+                    Name = Entities.DeploymentEnvironment.Live,
                     ArtefactSource = Entities.ArtefactSource.Actions
                 }
             ],

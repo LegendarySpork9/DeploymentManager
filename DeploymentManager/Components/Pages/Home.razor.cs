@@ -1,8 +1,12 @@
-﻿using DeploymentManager.Components.Shared;
+﻿using DeploymentManager.Abstractions;
+using DeploymentManager.Components.Shared;
+using DeploymentManager.Entities;
 using DeploymentManager.Models;
+using DeploymentManager.Models.Data;
 using DeploymentManager.Models.Related;
 using DeploymentManager.Models.Responses;
 using DeploymentManager.Models.Responses.Related;
+using DeploymentManager.Orchestrators;
 using DeploymentManager.Services;
 using Microsoft.AspNetCore.Components;
 
@@ -11,30 +15,35 @@ namespace DeploymentManager.Components.Pages
     public partial class Home
     {
         [Inject]
+        private ILoggerService _Logger { get; set; } = default!;
+        [Inject]
+        private IClock _Clock { get; set; } = default!;
+        [Inject]
+        private IServiceProvider _ServiceProvider { get; set; } = default!;
+        [Inject]
+        private DeploymentHistoryService _DeploymentHistoryService { get; set; } = default!;
+        [Inject]
         private GitHubService _GitHubService { get; set; } = default!;
-        [Inject]
-        private DocumentService _DocumentService { get; set; } = default!;
-        [Inject]
-        private IISService _IISService { get; set; } = default!;
-        [Inject]
-        private TaskSchedulerService _TaskSchedulerService { get; set; } = default!;
         [Inject]
         private AppSettingsModel AppSettings { get; set; } = default!;
 
         private ApprovalDialog approvalDialog;
+        private DeploymentConfigurationModel<ArtefactModel> DeploymentConfiguration;
+        private DeploymentHistoryModel<ArtefactModel> Deployment;
         private string Text;
-        private string Text2;
-        private string Text3;
 
         private ArtefactModel Artifact;
 
-        private void StartDeployment()
+        private async Task StartDeployment()
         {
-            approvalDialog.Show();
-        }
+            DeploymentOrchestrator _deploymentOrchestrator = new(
+            _Logger,
+            _Clock,
+            _ServiceProvider,
+            _DeploymentHistoryService,
+            AppSettings
+            );
 
-        private async Task HandleApproved()
-        {
             ProjectModel project = AppSettings.Projects.First();
             ArtefactListModel? artefactList = await _GitHubService.GetArtefacts(project.GitHub.Repository);
 
@@ -45,116 +54,37 @@ namespace DeploymentManager.Components.Pages
                 if (artefacts.Count > 0)
                 {
                     ArtefactModel artefact = artefacts.First();
-                    Artifact = artefact;
+                    DeploymentConfiguration = new()
+                    {
+                        Type = DeploymentType.GitHub,
+                        Environment = DeploymentEnvironment.Live,
+                        Project = project,
+                        Artefact = artefact,
+                        PrimaryDeploymentTarget = AppSettings.Environments[0],
+                        SecondaryDeploymentTargets = null,
+                        DeploymentSettings = new()
+                    };
 
-                    string downloadedFile = await _GitHubService.DownloadArtefact(
-                        AppSettings.ArtefactDownloadLocation,
-                        artefact,
-                        project.GitHub.Repository);
+                    Deployment = await _deploymentOrchestrator.SetUp<ArtefactModel>(DeploymentConfiguration);
 
-                    Text = downloadedFile;
+                    approvalDialog.Show();
                 }
             }
         }
 
-        private async Task StartExtract()
+        private async Task HandleApproved()
         {
-            if (!string.IsNullOrWhiteSpace(Text))
-            {
-                ProjectModel project = AppSettings.Projects.First(p => Text.Contains(p.GitHub.Artefact));
-
-                string artefactFile = Path.Combine(AppSettings.ArtefactDownloadLocation, $"{Artifact.Name}.zip");
-                string extractedArtefactFile = Path.Combine(AppSettings.ArtefactDownloadLocation, Artifact.Name);
-
-                if (await _DocumentService.ExtractArtefact(
-                    artefactFile,
-                    extractedArtefactFile))
-                {
-                    string[] files = await _DocumentService.GetExtractedArtefactFiles(
-                        Artifact.Name,
-                        extractedArtefactFile);
-
-                    List<(string, KeyValuePair<string, string>)> filesToMove = [];
-
-                    foreach (string file in files)
-                    {
-                        string fileName = Path.GetFileName(file);
-
-                        if (project.Ignore != null)
-                        {
-                            string? directory = Path.GetDirectoryName(file);
-
-                            if (!project.Ignore.Select(i => i.Name)
-                                    .Contains(fileName) && (directory != null && !project.Ignore.Select(i => i.Name)
-                                        .Contains(directory)))
-                            {
-                                string relativePath = Path.GetRelativePath(
-                                    extractedArtefactFile,
-                                    file);
-                                filesToMove.Add(new(
-                                    fileName,
-                                    new(
-                                        file,
-                                        $@"C:\{project.Directory}\{relativePath}")));
-                            }
-                        }
-
-                        else
-                        {
-                            string relativePath = Path.GetRelativePath(
-                                extractedArtefactFile,
-                                file);
-                            filesToMove.Add(new(
-                                fileName,
-                                new(
-                                    file,
-                                    $@"C:\{project.Directory}{relativePath}")));
-                        }
-                    }
-
-                    if (await _IISService.StopSite(project.Name))
-                    {
-                        if (await _DocumentService.MoveArtefactFiles(
-                            Artifact.Name,
-                            $@"C:\{project.Directory}",
-                            filesToMove))
-                        {
-                            if (await _DocumentService.DeleteArtefact(
-                                Artifact.Name,
-                                artefactFile,
-                                extractedArtefactFile))
-                            {
-                                if (await _IISService.StartSite(project.Name))
-                                {
-                                    Text2 = "Deployment Complete";
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        private async Task StartMove()
-        {
-            if (!string.IsNullOrWhiteSpace(Text))
-            {
-                ProjectModel project = AppSettings.Projects.First(p => Text.Contains(p.GitHub.Artefact));
-
-                if (await _TaskSchedulerService.StopTask(
-                    project.Name,
-                    AppSettings.Environments[0].Device,
-                    null))
-                {
-                    if (await _TaskSchedulerService.StartTask(
-                        project.Name,
-                        AppSettings.Environments[0].Device,
-                        null))
-                    {
-                        Text3 = "Task Restarted";
-                    }
-                }
-            }
+            Deployment.Status = Status.NotStarted;
+            DeploymentOrchestrator _deploymentOrchestrator = new(
+            _Logger,
+            _Clock,
+            _ServiceProvider,
+            _DeploymentHistoryService,
+            AppSettings
+            );
+            await _deploymentOrchestrator.Deploy(
+                Deployment,
+                DeploymentConfiguration);
         }
 
         private async Task HandleCancelled()

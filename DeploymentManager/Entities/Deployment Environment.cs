@@ -2,11 +2,12 @@
 namespace DeploymentManager.Entities
 {
     /// <summary>
-    /// Types of Deployment.
+    /// Deployment environments.
     /// </summary>
-    public enum DeploymentType
+    public enum DeploymentEnvironment
     {
-        GitHub,
-        FileUpload
+        Live,
+        QA,
+        Dev
     }
 }

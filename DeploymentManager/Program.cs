@@ -3,6 +3,8 @@ using DeploymentManager.Abstractions;
 using DeploymentManager.Components;
 using DeploymentManager.Implementations;
 using DeploymentManager.Models;
+using DeploymentManager.Orchestrators;
+using DeploymentManager.Orchestrators.GitHub;
 using DeploymentManager.Services;
 using DeploymentManager.Values;
 
@@ -58,11 +60,15 @@ namespace DeploymentManager
             builder.Services.AddSingleton<IGitHubClient, GitHubClientWrapper>();
             builder.Services.AddSingleton<IIISClient, IISClientWrapper>();
             builder.Services.AddSingleton<ITaskScheduler, TaskSchedulerWrapper>();
+            builder.Services.AddSingleton<IClock, SystemClockProvider>();
+            builder.Services.AddSingleton<IServiceProvider, ServiceProvider>();
             builder.Services.AddSingleton<ApprovalService>();
             builder.Services.AddSingleton<GitHubService>();
             builder.Services.AddSingleton<DocumentService>();
             builder.Services.AddSingleton<IISService>();
             builder.Services.AddSingleton<TaskSchedulerService>();
+            builder.Services.AddSingleton<DeploymentHistoryService>();
+            builder.Services.AddSingleton<DeploymentOrchestrator>();
             builder.Services.AddHttpContextAccessor();
 
             _logger.LogMessage(

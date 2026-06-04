@@ -8,10 +8,11 @@ namespace DeploymentManager.Models.Data.Related
     /// </summary>
     public class StageModel
     {
-        public required string Name { get; set; }
+        public required DeploymentStage Name { get; set; }
         public required Status Status { get; set; }
         public required DateTime StartDate { get; set; }
         public required DateTime EndDate { get; set; }
         public required TimeSpan RunTime { get; set; }
+        public List<string>? FailMessages { get; set; }
     }
 }

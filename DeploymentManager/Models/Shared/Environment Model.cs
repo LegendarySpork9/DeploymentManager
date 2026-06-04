@@ -1,7 +1,7 @@
 ﻿// Copyright © - Unpublished - Toby Hunter
 using DeploymentManager.Entities;
 
-namespace DeploymentManager.Models.Related
+namespace DeploymentManager.Models.Shared
 {
     /// <summary>
     /// Stores the configuration for the environment.
@@ -10,7 +10,7 @@ namespace DeploymentManager.Models.Related
     {
         public required string Device { get; set; }
         public required string Drive { get; set; }
-        public required string Name { get; set; }
+        public required DeploymentEnvironment Name { get; set; }
         public required ArtefactSource ArtefactSource { get; set; }
     }
 }

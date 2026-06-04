@@ -22,7 +22,7 @@ namespace DeploymentManager.Services
         /// <summary>
         /// Stops the given task scheduler task.
         /// </summary>
-        public async Task<bool> StopTask(
+        public async Task<(bool, string?)> StopTask(
             string taskName,
             string device,
             DeviceAuthModel? auth = null)
@@ -32,6 +32,7 @@ namespace DeploymentManager.Services
                 $"Stopping Task Scheduler task, {taskName}");
 
             bool stopped = false;
+            string? errorMessage = null;
 
             try
             {
@@ -49,9 +50,11 @@ namespace DeploymentManager.Services
 
             catch (Exception ex)
             {
+                errorMessage = ex.Message;
+
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Warning,
-                    ex.Message);
+                    errorMessage);
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Error,
                     ex.ToString());
@@ -60,13 +63,13 @@ namespace DeploymentManager.Services
                     $"Failed to stop Task Scheduler task, {taskName}");
             }
 
-            return stopped;
+            return (stopped, errorMessage);
         }
 
         /// <summary>
         /// Starts the given task scheduler task.
         /// </summary>
-        public async Task<bool> StartTask(
+        public async Task<(bool, string?)> StartTask(
             string taskName,
             string device,
             DeviceAuthModel? auth = null)
@@ -76,6 +79,7 @@ namespace DeploymentManager.Services
                 $"Starting Task Scheduler task, {taskName}");
 
             bool started = false;
+            string? errorMessage = null;
 
             try
             {
@@ -93,9 +97,11 @@ namespace DeploymentManager.Services
 
             catch (Exception ex)
             {
+                errorMessage= ex.Message;
+
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Warning,
-                    ex.Message);
+                    errorMessage);
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Error,
                     ex.ToString());
@@ -104,7 +110,7 @@ namespace DeploymentManager.Services
                     $"Failed to start Task Scheduler task, {taskName}");
             }
 
-            return started;
+            return (started, errorMessage);
         }
     }
 }

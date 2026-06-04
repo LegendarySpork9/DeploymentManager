@@ -1,5 +1,6 @@
 ﻿// Copyright © - Unpublished - Toby Hunter
 using DeploymentManager.Entities;
+using DeploymentManager.Models.Shared;
 
 namespace DeploymentManager.Models.Related
 {

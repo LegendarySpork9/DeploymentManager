@@ -1,5 +1,6 @@
 ﻿// Copyright © - Unpublished - Toby Hunter
 using DeploymentManager.Abstractions;
+using DeploymentManager.Models.Data.Related;
 using DeploymentManager.Values;
 
 namespace DeploymentManager.Services
@@ -21,7 +22,7 @@ namespace DeploymentManager.Services
         /// <summary>
         /// Extracts the download artefact.
         /// </summary>
-        public async Task<bool> ExtractArtefact(
+        public async Task<(bool, string?)> ExtractArtefact(
             string file,
             string path)
         {
@@ -30,6 +31,7 @@ namespace DeploymentManager.Services
                 $"Extracting artefact, {Path.GetFileNameWithoutExtension(file)}, to {path}");
 
             bool extracted = false;
+            string? errorMessage = null;
 
             try
             {
@@ -49,9 +51,11 @@ namespace DeploymentManager.Services
 
             catch (Exception ex)
             {
+                errorMessage = ex.Message;
+
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Warning,
-                    ex.Message);
+                    errorMessage);
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Error,
                     ex.ToString());
@@ -60,21 +64,22 @@ namespace DeploymentManager.Services
                     $"Failed to extract artefact, {Path.GetFileNameWithoutExtension(file)}, to {path}");
             }
 
-            return extracted;
+            return (extracted, errorMessage);
         }
 
         /// <summary>
         /// Returns the list of extracted files.
         /// </summary>
-        public async Task<string[]> GetExtractedArtefactFiles(
+        public async Task<(string[], string?)> GetExtractedArtefactFiles(
             string artefact,
             string path)
         {
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
-                $"Obtaining extracted artefact, {artefact}");
+                $"Obtaining extracted files for artefact, {artefact}");
 
             string[] files = [];
+            string? errorMessage = null;
 
             try
             {
@@ -82,32 +87,35 @@ namespace DeploymentManager.Services
 
                 _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
-                $"Obtained extracted artefact, {artefact}");
+                $"Obtained extracted files for artefact, {artefact}");
             }
 
             catch (Exception ex)
             {
+                errorMessage = ex.Message;
+
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Warning,
-                    ex.Message);
+                    errorMessage);
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Error,
                     ex.ToString());
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
-                    $"Failed to obtain extracted artefact, {artefact}");
+                    $"Failed to obtain extracted files for artefact, {artefact}");
             }
 
-            return files;
+            return (files, errorMessage);
         }
 
         /// <summary>
         /// Moves the artefact files to the given directory.
         /// </summary>
-        public async Task<bool> MoveArtefactFiles(
+        public async Task<(bool, List<string>)> MoveArtefactFiles(
             string artefact,
             string path,
-            List<(string, KeyValuePair<string, string>)> files)
+            string device,
+            List<ArtefactFileModel> files)
         {
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
@@ -115,22 +123,23 @@ namespace DeploymentManager.Services
 
             bool moved = false;
             List<bool> moveResult = [];
+            List<string> errorMessages = [];
 
-            foreach ((string, KeyValuePair<string, string>) file in files)
+            foreach (ArtefactFileModel file in files)
             {
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
-                    $"Moving file, {file.Item1} for artefact, {artefact}");
+                    $"Moving file, {file.Name} for artefact, {artefact}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
-                    $"Source: {file.Item2.Key}");
+                    $"Source: {file.Paths.Key}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
-                    $"Destination: {file.Item2.Value}");
+                    $"Destination: {file.Paths.Value}");
 
                 try
                 {
-                    string? directory = Path.GetDirectoryName(file.Item2.Value);
+                    string? directory = Path.GetDirectoryName(file.Paths.Value);
 
                     if (!string.IsNullOrWhiteSpace(directory) && !await _FileSystem.CheckDirectory(directory))
                     {
@@ -138,13 +147,13 @@ namespace DeploymentManager.Services
                     }
 
                     await _FileSystem.CopyFile(
-                        file.Item2.Key,
-                        file.Item2.Value);
+                        file.Paths.Key,
+                        file.Paths.Value);
                     moveResult.Add(true);
 
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Info,
-                        $"Moved file, {file.Item1} for artefact, {artefact}");
+                        $"Moved file, {file.Name} for artefact, {artefact}");
                 }
 
                 catch (Exception ex)
@@ -157,8 +166,9 @@ namespace DeploymentManager.Services
                         ex.ToString());
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Info,
-                        $"Failed to move file, {file.Item1} for artefact, {artefact}");
+                        $"Failed to move file, {file.Name} for artefact, {artefact}");
                     moveResult.Add(false);
+                    errorMessages.Add($"{device} ({file.Name}) - {ex.Message}");
                 }
             }
 
@@ -178,13 +188,13 @@ namespace DeploymentManager.Services
                     $"Failed to move files for artefact, {artefact}, to {path}");
             }
 
-            return moved;
+            return (moved, errorMessages);
         }
 
         /// <summary>
         /// Deletes the downloaded artefact.
         /// </summary>
-        public async Task<bool> DeleteArtefact(
+        public async Task<(bool, string?)> DeleteArtefact(
             string artefact,
             string path,
             string extractPath)
@@ -194,6 +204,7 @@ namespace DeploymentManager.Services
                 $"Deleting artefact, {artefact}");
 
             bool deleted = false;
+            string? errorMessage = null;
 
             try
             {
@@ -209,9 +220,10 @@ namespace DeploymentManager.Services
 
             catch (Exception ex)
             {
+                errorMessage = ex.Message;
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Warning,
-                    ex.Message);
+                    errorMessage);
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Error,
                     ex.ToString());
@@ -220,7 +232,7 @@ namespace DeploymentManager.Services
                     $"Failed to delete artefact, {artefact}");
             }
 
-            return deleted;
+            return (deleted, errorMessage);
         }
     }
 }
