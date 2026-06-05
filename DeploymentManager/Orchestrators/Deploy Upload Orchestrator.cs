@@ -39,7 +39,8 @@ namespace DeploymentManager.Orchestrators
         public async Task<DeploymentHistoryModel<UploadFileModel>> Run(
             DeploymentHistoryModel<UploadFileModel> deployment,
             string artefactDownloadLocation,
-            DeploymentConfigurationModel<UploadFileModel> deploymentConfiguration)
+            DeploymentConfigurationModel<UploadFileModel> deploymentConfiguration,
+            Action? onStageUpdated = null)
         {
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
@@ -47,6 +48,8 @@ namespace DeploymentManager.Orchestrators
 
             deployment.Status = Status.Running;
             deployment.StartDate = _Clock.UtcNow;
+
+            onStageUpdated?.Invoke();
 
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
@@ -62,6 +65,8 @@ namespace DeploymentManager.Orchestrators
             StageModel extract = deployment.Stages[0];
             extract.Status = Status.Running;
             extract.StartDate = _Clock.UtcNow;
+
+            onStageUpdated?.Invoke();
 
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
@@ -93,6 +98,8 @@ namespace DeploymentManager.Orchestrators
                 extract.RunTime = extract.EndDate - extract.StartDate;
                 extract.FailMessages = [errorMessage ?? "No error message received from Document Service"];
             }
+
+            onStageUpdated?.Invoke();
 
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
@@ -127,6 +134,8 @@ namespace DeploymentManager.Orchestrators
                 StageModel fetchFiles = deployment.Stages[1];
                 fetchFiles.Status = Status.Running;
                 fetchFiles.StartDate = _Clock.UtcNow;
+
+                onStageUpdated?.Invoke();
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -195,6 +204,8 @@ namespace DeploymentManager.Orchestrators
                     fetchFiles.FailMessages = [errorMessage ?? "No error message received from Document Service"];
                 }
 
+                onStageUpdated?.Invoke();
+
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
                     $"Fetch Artefact Files Stage Status: {fetchFiles.Status}");
@@ -221,12 +232,15 @@ namespace DeploymentManager.Orchestrators
                 stopServices.Status = Status.Running;
                 stopServices.StartDate = _Clock.UtcNow;
 
+                onStageUpdated?.Invoke();
+
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
                     $"Stop Services Stage Start Date: {stopServices.StartDate:dd/MM/yyyy hh:mm:ss}");
 
                 List<AdditionalDeployModel> secondaryDeploymentTargets = deploymentConfiguration.SecondaryDeploymentTargets ?? [];
                 List<bool> success = [];
+                List<string> warningMessages = [];
 
                 if (deploymentConfiguration.Project.Type == ProjectType.API || deploymentConfiguration.Project.Type == ProjectType.Website)
                 {
@@ -239,6 +253,11 @@ namespace DeploymentManager.Orchestrators
                     if (stopped)
                     {
                         success.Add(true);
+
+                        if (tempErrorMessage != null)
+                        {
+                            warningMessages.Add($"{device} - {tempErrorMessage}");
+                        }
                     }
 
                     else
@@ -263,6 +282,11 @@ namespace DeploymentManager.Orchestrators
                         if (stopped)
                         {
                             success.Add(true);
+
+                            if (tempErrorMessage != null)
+                            {
+                                warningMessages.Add($"{device} - {tempErrorMessage}");
+                            }
                         }
 
                         else
@@ -285,9 +309,14 @@ namespace DeploymentManager.Orchestrators
                         deploymentConfiguration.Project.Name,
                         device);
 
-                    if (stopped)       
+                    if (stopped)
                     {
                         success.Add(true);
+
+                        if (tempErrorMessage != null)
+                        {
+                            warningMessages.Add($"{device} - {tempErrorMessage}");
+                        }
                     }
 
                     else
@@ -312,6 +341,11 @@ namespace DeploymentManager.Orchestrators
                         if (stopped)
                         {
                             success.Add(true);
+
+                            if (tempErrorMessage != null)
+                            {
+                                warningMessages.Add($"{device} - {tempErrorMessage}");
+                            }
                         }
 
                         else
@@ -328,9 +362,14 @@ namespace DeploymentManager.Orchestrators
 
                 if (success.All(s => s))
                 {
-                    stopServices.Status = Status.Completed;
+                    stopServices.Status = warningMessages.Count > 0 ? Status.CompletedWithWarnings : Status.Completed;
                     stopServices.EndDate = _Clock.UtcNow;
                     stopServices.RunTime = stopServices.EndDate - stopServices.StartDate;
+
+                    if (warningMessages.Count > 0)
+                    {
+                        stopServices.WarningMessages = warningMessages;
+                    }
                 }
 
                 else
@@ -342,6 +381,8 @@ namespace DeploymentManager.Orchestrators
                     stopServices.FailMessages = errorMessages;
                     errorMessages = [];
                 }
+
+                onStageUpdated?.Invoke();
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -359,7 +400,7 @@ namespace DeploymentManager.Orchestrators
                 finishedStages.Add(stopServices);
             }
 
-            if (finishedStages.All(fs => fs.Status == Status.Completed))
+            if (finishedStages.All(fs => fs.Status == Status.Completed || fs.Status == Status.CompletedWithWarnings))
             {
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
@@ -368,6 +409,8 @@ namespace DeploymentManager.Orchestrators
                 StageModel move = deployment.Stages[3];
                 move.Status = Status.Running;
                 move.StartDate = _Clock.UtcNow;
+
+                onStageUpdated?.Invoke();
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -422,6 +465,8 @@ namespace DeploymentManager.Orchestrators
                     errorMessages = [];
                 }
 
+                onStageUpdated?.Invoke();
+
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
                     $"Move Artefact Stage Status: {move.Status}");
@@ -438,7 +483,7 @@ namespace DeploymentManager.Orchestrators
                 finishedStages.Add(move);
             }
 
-            if (deploymentConfiguration.DeploymentSettings.RestartService && finishedStages.All(fs => fs.Status == Status.Completed))
+            if (deploymentConfiguration.DeploymentSettings.RestartService && finishedStages.All(fs => fs.Status == Status.Completed || fs.Status == Status.CompletedWithWarnings))
             {
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
@@ -447,6 +492,8 @@ namespace DeploymentManager.Orchestrators
                 StageModel startServices = deployment.Stages[4];
                 startServices.Status = Status.Running;
                 startServices.StartDate = _Clock.UtcNow;
+
+                onStageUpdated?.Invoke();
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -571,6 +618,8 @@ namespace DeploymentManager.Orchestrators
                     errorMessages = [];
                 }
 
+                onStageUpdated?.Invoke();
+
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
                     $"Start Services Stage Status: {startServices.Status}");
@@ -591,10 +640,13 @@ namespace DeploymentManager.Orchestrators
             {
                 StageModel startServices = deployment.Stages[4];
                 startServices.Status = Status.Skipped;
+
+                onStageUpdated?.Invoke();
+
                 finishedStages.Add(startServices);
             }
 
-            if (finishedStages.All(fs => fs.Status == Status.Completed || fs.Status == Status.Skipped))
+            if (finishedStages.All(fs => fs.Status == Status.Completed || fs.Status == Status.CompletedWithWarnings || fs.Status == Status.Skipped))
             {
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
@@ -603,6 +655,8 @@ namespace DeploymentManager.Orchestrators
                 StageModel cleanArtefacts = deployment.Stages[5];
                 cleanArtefacts.Status = Status.Running;
                 cleanArtefacts.StartDate = _Clock.UtcNow;
+
+                onStageUpdated?.Invoke();
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -629,6 +683,8 @@ namespace DeploymentManager.Orchestrators
                     cleanArtefacts.FailMessages = [errorMessage ?? "No error message received from Document Service"];
                 }
 
+                onStageUpdated?.Invoke();
+
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
                     $"Clean Artefacts Stage Status: {cleanArtefacts.Status}");
@@ -645,11 +701,13 @@ namespace DeploymentManager.Orchestrators
                 finishedStages.Add(cleanArtefacts);
             }
 
-            if (finishedStages.Count == deployment.Stages.Count && finishedStages.All(fs => fs.Status == Status.Completed || fs.Status == Status.Skipped))
+            if (finishedStages.Count == deployment.Stages.Count && finishedStages.All(fs => fs.Status == Status.Completed || fs.Status == Status.CompletedWithWarnings || fs.Status == Status.Skipped))
             {
-                deployment.Status = Status.Completed;
+                deployment.Status = finishedStages.Any(fs => fs.Status == Status.CompletedWithWarnings) ? Status.CompletedWithWarnings : Status.Completed;
                 deployment.EndDate = _Clock.UtcNow;
                 deployment.RunTime = deployment.EndDate - deployment.StartDate;
+
+                onStageUpdated?.Invoke();
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
@@ -661,6 +719,8 @@ namespace DeploymentManager.Orchestrators
                 deployment.Status = Status.Failed;
                 deployment.EndDate = _Clock.UtcNow;
                 deployment.RunTime = deployment.EndDate - deployment.StartDate;
+
+                onStageUpdated?.Invoke();
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,

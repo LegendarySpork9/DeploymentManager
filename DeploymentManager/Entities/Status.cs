@@ -10,6 +10,7 @@ namespace DeploymentManager.Entities
         NotStarted,
         Running,
         Completed,
+        CompletedWithWarnings,
         Skipped,
         Failed
     }

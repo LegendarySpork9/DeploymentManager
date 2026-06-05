@@ -43,7 +43,8 @@ namespace DeploymentManager.Orchestrators.GitHub
         public async Task<DeploymentHistoryModel<ArtefactModel>> Run(
             DeploymentHistoryModel<ArtefactModel> deployment,
             string artefactDownloadLocation,
-            DeploymentConfigurationModel<ArtefactModel> deploymentConfiguration)
+            DeploymentConfigurationModel<ArtefactModel> deploymentConfiguration,
+            Action? onStageUpdated = null)
         {
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
@@ -51,6 +52,8 @@ namespace DeploymentManager.Orchestrators.GitHub
 
             deployment.Status = Status.Running;
             deployment.StartDate = _Clock.UtcNow;
+
+            onStageUpdated?.Invoke();
 
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
@@ -66,6 +69,8 @@ namespace DeploymentManager.Orchestrators.GitHub
             StageModel fetch = deployment.Stages[0];
             fetch.Status = Status.Running;
             fetch.StartDate = _Clock.UtcNow;
+
+            onStageUpdated?.Invoke();
 
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
@@ -91,6 +96,8 @@ namespace DeploymentManager.Orchestrators.GitHub
                 fetch.RunTime = fetch.EndDate - fetch.StartDate;
                 fetch.FailMessages = [errorMessage ?? "No error message received from GitHub Service"];
             }
+
+            onStageUpdated?.Invoke();
 
             finishedStages.Add(fetch);
 
@@ -121,6 +128,8 @@ namespace DeploymentManager.Orchestrators.GitHub
                 extract.Status = Status.Running;
                 extract.StartDate = _Clock.UtcNow;
 
+                onStageUpdated?.Invoke();
+
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
                     $"Extract Artefact Stage Start Date: {extract.StartDate:dd/MM/yyyy hh:mm:ss}");
@@ -144,6 +153,8 @@ namespace DeploymentManager.Orchestrators.GitHub
                     extract.RunTime = extract.EndDate - extract.StartDate;
                     extract.FailMessages = [errorMessage ?? "No error message received from Document Service"];
                 }
+
+                onStageUpdated?.Invoke();
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -179,6 +190,8 @@ namespace DeploymentManager.Orchestrators.GitHub
                 StageModel fetchFiles = deployment.Stages[2];
                 fetchFiles.Status = Status.Running;
                 fetchFiles.StartDate = _Clock.UtcNow;
+
+                onStageUpdated?.Invoke();
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -247,6 +260,8 @@ namespace DeploymentManager.Orchestrators.GitHub
                     fetchFiles.FailMessages = [errorMessage ?? "No error message received from Document Service"];
                 }
 
+                onStageUpdated?.Invoke();
+
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
                     $"Fetch Artefact Files Stage Status: {fetchFiles.Status}");
@@ -273,12 +288,15 @@ namespace DeploymentManager.Orchestrators.GitHub
                 stopServices.Status = Status.Running;
                 stopServices.StartDate = _Clock.UtcNow;
 
+                onStageUpdated?.Invoke();
+
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
                     $"Stop Services Stage Start Date: {stopServices.StartDate:dd/MM/yyyy hh:mm:ss}");
 
                 List<AdditionalDeployModel> secondaryDeploymentTargets = deploymentConfiguration.SecondaryDeploymentTargets ?? [];
                 List<bool> success = [];
+                List<string> warningMessages = [];
 
                 if (deploymentConfiguration.Project.Type == ProjectType.API || deploymentConfiguration.Project.Type == ProjectType.Website)
                 {
@@ -291,6 +309,11 @@ namespace DeploymentManager.Orchestrators.GitHub
                     if (stopped)
                     {
                         success.Add(true);
+
+                        if (tempErrorMessage != null)
+                        {
+                            warningMessages.Add($"{device} - {tempErrorMessage}");
+                        }
                     }
 
                     else
@@ -315,6 +338,11 @@ namespace DeploymentManager.Orchestrators.GitHub
                         if (stopped)
                         {
                             success.Add(true);
+
+                            if (tempErrorMessage != null)
+                            {
+                                warningMessages.Add($"{device} - {tempErrorMessage}");
+                            }
                         }
 
                         else
@@ -337,9 +365,14 @@ namespace DeploymentManager.Orchestrators.GitHub
                         deploymentConfiguration.Project.Name,
                         device);
 
-                    if (stopped)       
+                    if (stopped)
                     {
                         success.Add(true);
+
+                        if (tempErrorMessage != null)
+                        {
+                            warningMessages.Add($"{device} - {tempErrorMessage}");
+                        }
                     }
 
                     else
@@ -364,6 +397,11 @@ namespace DeploymentManager.Orchestrators.GitHub
                         if (stopped)
                         {
                             success.Add(true);
+
+                            if (tempErrorMessage != null)
+                            {
+                                warningMessages.Add($"{device} - {tempErrorMessage}");
+                            }
                         }
 
                         else
@@ -380,9 +418,14 @@ namespace DeploymentManager.Orchestrators.GitHub
 
                 if (success.All(s => s))
                 {
-                    stopServices.Status = Status.Completed;
+                    stopServices.Status = warningMessages.Count > 0 ? Status.CompletedWithWarnings : Status.Completed;
                     stopServices.EndDate = _Clock.UtcNow;
                     stopServices.RunTime = stopServices.EndDate - stopServices.StartDate;
+
+                    if (warningMessages.Count > 0)
+                    {
+                        stopServices.WarningMessages = warningMessages;
+                    }
                 }
 
                 else
@@ -394,6 +437,8 @@ namespace DeploymentManager.Orchestrators.GitHub
                     stopServices.FailMessages = errorMessages;
                     errorMessages = [];
                 }
+
+                onStageUpdated?.Invoke();
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -411,7 +456,7 @@ namespace DeploymentManager.Orchestrators.GitHub
                 finishedStages.Add(stopServices);
             }
 
-            if (finishedStages.All(fs => fs.Status == Status.Completed))
+            if (finishedStages.All(fs => fs.Status == Status.Completed || fs.Status == Status.CompletedWithWarnings))
             {
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
@@ -420,6 +465,8 @@ namespace DeploymentManager.Orchestrators.GitHub
                 StageModel move = deployment.Stages[4];
                 move.Status = Status.Running;
                 move.StartDate = _Clock.UtcNow;
+
+                onStageUpdated?.Invoke();
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -474,6 +521,8 @@ namespace DeploymentManager.Orchestrators.GitHub
                     errorMessages = [];
                 }
 
+                onStageUpdated?.Invoke();
+
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
                     $"Move Artefact Stage Status: {move.Status}");
@@ -490,7 +539,7 @@ namespace DeploymentManager.Orchestrators.GitHub
                 finishedStages.Add(move);
             }
 
-            if (deploymentConfiguration.DeploymentSettings.RestartService && finishedStages.All(fs => fs.Status == Status.Completed))
+            if (deploymentConfiguration.DeploymentSettings.RestartService && finishedStages.All(fs => fs.Status == Status.Completed || fs.Status == Status.CompletedWithWarnings))
             {
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
@@ -499,6 +548,8 @@ namespace DeploymentManager.Orchestrators.GitHub
                 StageModel startServices = deployment.Stages[5];
                 startServices.Status = Status.Running;
                 startServices.StartDate = _Clock.UtcNow;
+
+                onStageUpdated?.Invoke();
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -623,6 +674,8 @@ namespace DeploymentManager.Orchestrators.GitHub
                     errorMessages = [];
                 }
 
+                onStageUpdated?.Invoke();
+
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
                     $"Start Services Stage Status: {startServices.Status}");
@@ -639,14 +692,17 @@ namespace DeploymentManager.Orchestrators.GitHub
                 finishedStages.Add(startServices);
             }
 
-            if (!deploymentConfiguration.DeploymentSettings.RestartService)
+            if (!deploymentConfiguration.DeploymentSettings.RestartService && finishedStages.All(fs => fs.Status == Status.Completed || fs.Status == Status.CompletedWithWarnings))
             {
                 StageModel startServices = deployment.Stages[5];
                 startServices.Status = Status.Skipped;
+
+                onStageUpdated?.Invoke();
+
                 finishedStages.Add(startServices);
             }
 
-            if (finishedStages.All(fs => fs.Status == Status.Completed || fs.Status == Status.Skipped))
+            if (finishedStages.All(fs => fs.Status == Status.Completed || fs.Status == Status.CompletedWithWarnings || fs.Status == Status.Skipped))
             {
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
@@ -655,6 +711,8 @@ namespace DeploymentManager.Orchestrators.GitHub
                 StageModel cleanArtefacts = deployment.Stages[6];
                 cleanArtefacts.Status = Status.Running;
                 cleanArtefacts.StartDate = _Clock.UtcNow;
+
+                onStageUpdated?.Invoke();
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -681,6 +739,8 @@ namespace DeploymentManager.Orchestrators.GitHub
                     cleanArtefacts.FailMessages = [errorMessage ?? "No error message received from Document Service"];
                 }
 
+                onStageUpdated?.Invoke();
+
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
                     $"Clean Artefacts Stage Status: {cleanArtefacts.Status}");
@@ -697,11 +757,13 @@ namespace DeploymentManager.Orchestrators.GitHub
                 finishedStages.Add(cleanArtefacts);
             }
 
-            if (finishedStages.Count == deployment.Stages.Count && finishedStages.All(fs => fs.Status == Status.Completed || fs.Status == Status.Skipped))
+            if (finishedStages.Count == deployment.Stages.Count && finishedStages.All(fs => fs.Status == Status.Completed || fs.Status == Status.CompletedWithWarnings || fs.Status == Status.Skipped))
             {
-                deployment.Status = Status.Completed;
+                deployment.Status = finishedStages.Any(fs => fs.Status == Status.CompletedWithWarnings) ? Status.CompletedWithWarnings : Status.Completed;
                 deployment.EndDate = _Clock.UtcNow;
                 deployment.RunTime = deployment.EndDate - deployment.StartDate;
+
+                onStageUpdated?.Invoke();
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
@@ -713,6 +775,8 @@ namespace DeploymentManager.Orchestrators.GitHub
                 deployment.Status = Status.Failed;
                 deployment.EndDate = _Clock.UtcNow;
                 deployment.RunTime = deployment.EndDate - deployment.StartDate;
+
+                onStageUpdated?.Invoke();
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,

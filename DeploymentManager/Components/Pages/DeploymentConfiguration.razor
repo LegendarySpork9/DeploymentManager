@@ -1,0 +1,244 @@
+﻿@page "/"
+
+<PageTitle>Deployment Configuration</PageTitle>
+
+@if (IsLoading && Project == null && Environment == null && Artefact == null)
+{
+    <div class="d-flex justify-content-center py-5">
+        <div class="spinner-border text-light" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+
+else
+{
+    @if (!IsReadyForDeployment || !PerformDeploy)
+    {
+        <div @key="FormKey" class="modal show d-block">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Configure Deployment</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Project</label>
+                            <select class="form-control" disabled="@(Project != null || !AppSettings.Projects.Any() || !string.IsNullOrWhiteSpace(ErrorMessage))" @onchange="(e) => SetProject(e.Value.ToString())">
+                                <option value="" disabled selected>Select an option</option>
+                                @foreach (ProjectModel project in AppSettings.Projects)
+                                {
+                                    <option value="@project.Name">@project.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Environment</label>
+                            <select class="form-control" disabled="@(Environment != null || Project == null)" @onchange="(e) => SetEnvironment((string)e.Value)">
+                                <option value="" disabled selected>Select an option</option>
+                                @foreach (EnvironmentModel environment in AppSettings.Environments)
+                                {
+                                    <option value="@environment.Name">@environment.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Deployment Type</label>
+                            <select class="form-control" disabled="@(DeploymentType != null || Environment == null)" @onchange="(e) => SetDeploymentType((string)e.Value)">
+                                <option value="" disabled selected>Select an option</option>
+                                <option value="@Entities.DeploymentType.GitHub">@Entities.DeploymentType.GitHub</option>
+                                <option value="@Entities.DeploymentType.FileUpload">@Entities.DeploymentType.FileUpload</option>
+                            </select>
+                        </div>
+                        @if (DeploymentType == Entities.DeploymentType.FileUpload)
+                        {
+                            <button type="submit" class="btn btn-primary btn-sm" disabled="@IsLoading" @onclick="OpenFileUploadModal">
+                                @if (IsLoading && !FileUploaded)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                }
+                                @UploadButtonText
+                            </button>
+                        }
+
+                        @if (Project != null && Environment != null && DeploymentType == Entities.DeploymentType.GitHub)
+                        {
+                            @if (IsLoading)
+                            {
+                                <div class="d-flex justify-content-center py-5">
+                                    <span class="spinner-border me-2" role="status"></span>
+                                </div>
+                            }
+
+                            else
+                            {
+                                <div class="mb-3">
+                                    <label class="form-label">Artefact</label>
+                                    <select class="form-control" disabled="@(Artefact != null)" @onchange="(e) => SetArtefact((string)e.Value)">
+                                        <option value="" disabled selected>Select an option</option>
+                                        @foreach (ArtefactModel artefact in Artefacts)
+                                        {
+                                            <option value="@artefact.Name">@artefact.Name</option>
+                                        }
+                                    </select>
+                                </div>
+                            }
+                        }
+
+                        @if (Project != null && Environment != null && DeploymentType != null && DeploymentType != null && Artefact != null)
+                        {
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <label class="form-check-label">Run Additional Deploys</label>
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input" type="checkbox" role="switch" @bind="DeploymentSettings.RunAdditionalDeploys" />
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <label class="form-check-label">Restart Services</label>
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input" type="checkbox" role="switch" @bind="DeploymentSettings.RestartService" />
+                                </div>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(ErrorMessage))
+                        {
+                            <div class="alert alert-danger py-2">@ErrorMessage</div>
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary btn-sm" disabled="@(!IsReadyForDeployment || IsLoading)" @onclick="StartDeployment">
+                            @if (IsLoading && IsReadyForDeployment)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            }
+                            Deploy
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <ApprovalDialog
+            @ref="ApprovalDialogForm"
+            OnApproved="Deploy"
+            OnCancelled="Cancel" />
+
+        <FileUploadDialog
+            @ref="FileUploadDialogForm"
+            OnFileUploaded="HandleFileUploaded" />
+    }
+
+    else
+    {
+        <div class="modal show d-block">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Deployment Progress</h5>
+                        <div class="header-pills">
+                            <span class="stage-pill">Start: @FormatTime(Deployment.StartDate)</span>
+                            <span class="stage-pill">End: @FormatTime(Deployment.EndDate)</span>
+                            <span class="stage-pill">@FormatRunTime(Deployment.RunTime)</span>
+                            <span class="badge @GetOverallStatusClass()">@Deployment.Status</span>
+                        </div>
+                    </div>
+
+                    <div class="modal-body progress-body">
+                        @foreach (StageModel stage in Deployment.Stages)
+                        {
+                            <div class="stage-card @GetCardClass(stage.Status)">
+                                <div class="stage-card-top">
+                                    <div class="stage-title">
+                                        @if (stage.Status == Status.Running)
+                                        {
+                                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                        }
+                                        @FormatStageName(stage.Name)
+                                    </div>
+                                    <div class="stage-pills">
+                                        <span class="stage-pill">Start: @FormatTime(stage.StartDate)</span>
+                                        <span class="stage-pill">End: @FormatTime(stage.EndDate)</span>
+                                        <span class="stage-pill">@FormatRunTime(stage.RunTime)</span>
+                                        <span class="stage-status-badge @GetStatusBadgeClass(stage.Status)">@stage.Status</span>
+                                    </div>
+                                </div>
+                                <div class="stage-card-bottom">
+                                    @if (stage.FailMessages != null && stage.FailMessages.Count > 0)
+                                    {
+                                        <button class="error-link" @onclick="() => ShowErrors(stage)">
+                                            @stage.FailMessages.Count error(s)
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <span class="stage-detail">0 errors</span>
+                                    }
+
+                                    @if (stage.WarningMessages != null && stage.WarningMessages.Count > 0)
+                                    {
+                                        <button class="warning-link" @onclick="() => ShowWarnings(stage)">
+                                            @stage.WarningMessages.Count warning(s)
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    @if (Deployment.Status == Status.Completed || Deployment.Status == Status.CompletedWithWarnings || Deployment.Status == Status.Failed)
+                    {
+                        <div class="modal-footer">
+                            <div class="d-flex justify-content-between align-items-center w-100">
+                                <span class="text-muted">Total: @FormatRunTime(Deployment.RunTime)</span>
+                                <button type="button" class="btn btn-outline-light btn-sm" @onclick="HandleDeploymentClose">Close</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        @if (SelectedStage != null)
+        {
+            <div class="error-overlay" @onclick="CloseErrors">
+                <div class="error-panel" @onclick:stopPropagation="true">
+                    <div class="error-header">
+                        <h6 class="mb-0">@FormatStageName(SelectedStage.Name) - Errors</h6>
+                        <button type="button" class="btn-close btn-close-white" @onclick="CloseErrors"></button>
+                    </div>
+                    <div class="error-body">
+                        @if (SelectedStage.FailMessages != null)
+                        {
+                            @foreach (string message in SelectedStage.FailMessages)
+                            {
+                                <div class="error-item">@message</div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (WarningStage != null)
+        {
+            <div class="error-overlay" @onclick="CloseWarnings">
+                <div class="warning-panel" @onclick:stopPropagation="true">
+                    <div class="warning-header">
+                        <h6 class="mb-0">@FormatStageName(WarningStage.Name) - Warnings</h6>
+                        <button type="button" class="btn-close btn-close-white" @onclick="CloseWarnings"></button>
+                    </div>
+                    <div class="warning-body">
+                        @if (WarningStage.WarningMessages != null)
+                        {
+                            @foreach (string message in WarningStage.WarningMessages)
+                            {
+                                <div class="warning-item">@message</div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    }
+}

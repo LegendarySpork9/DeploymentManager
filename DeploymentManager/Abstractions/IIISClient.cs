@@ -8,7 +8,7 @@ namespace DeploymentManager.Abstractions
     /// </summary>
     public interface IIISClient
     {
-        void StopSite(string site, string device, DeviceAuthModel? auth = null);
+        string? StopSite(string site, string device, DeviceAuthModel? auth = null);
         void StartSite(string site, string device, DeviceAuthModel? auth = null);
     }
 }

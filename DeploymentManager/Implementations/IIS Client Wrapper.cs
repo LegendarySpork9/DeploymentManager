@@ -27,21 +27,39 @@ namespace DeploymentManager.Implementations
         /// <summary>
         /// Stops the given IIS site.
         /// </summary>
-        public void StopSite(
+        public string? StopSite(
             string site,
             string device,
             DeviceAuthModel? auth = null)
         {
+            string? warning = null;
+
             RunWithOptionalImpersonation(auth, () =>
             {
                 using (ServerManager serverManager = ConnectToServer(device))
                 {
                     Site iisSite = serverManager.Sites[site];
                     ApplicationPool appPool = serverManager.ApplicationPools[iisSite.Applications[0].ApplicationPoolName];
-                    iisSite.Stop();
-                    appPool.Stop();
+
+                    if (iisSite.State == ObjectState.Stopped && appPool.State == ObjectState.Stopped)
+                    {
+                        warning = $"IIS site '{site}' was already stopped";
+                        return;
+                    }
+
+                    if (iisSite.State != ObjectState.Stopped)
+                    {
+                        iisSite.Stop();
+                    }
+
+                    if (appPool.State != ObjectState.Stopped)
+                    {
+                        appPool.Stop();
+                    }
                 }
             });
+
+            return warning;
         }
 
         /// <summary>

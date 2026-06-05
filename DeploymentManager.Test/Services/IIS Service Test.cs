@@ -21,7 +21,8 @@ namespace DeploymentManager.Test.Services
             _MockIISClient.Setup(iis => iis.StopSite(
                 It.IsAny<string>(),
                 It.IsAny<string>(),
-                It.IsAny<DeviceAuthModel?>()));
+                It.IsAny<DeviceAuthModel?>()))
+                .Returns((string?)null);
 
             IISService iisService = new(
                 _MockLogger.Object,
@@ -35,6 +36,28 @@ namespace DeploymentManager.Test.Services
             _MockIISClient.Verify(
                 iis => iis.StopSite("Test Site", "TestDevice", null),
                 Times.Once);
+        }
+
+        /// <summary>
+        /// Tests whether the StopSite method returns true with a warning message when the site was already stopped.
+        /// </summary>
+        [TestMethod]
+        public async Task TestStopSiteReturnsTrueWithWarning()
+        {
+            _MockIISClient.Setup(iis => iis.StopSite(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<DeviceAuthModel?>()))
+                .Returns("IIS site 'Test Site' was already stopped");
+
+            IISService iisService = new(
+                _MockLogger.Object,
+                _MockIISClient.Object);
+
+            (bool actual, string? errorMessage) = await iisService.StopSite("Test Site", "TestDevice");
+
+            Assert.IsTrue(actual);
+            Assert.AreEqual("IIS site 'Test Site' was already stopped", errorMessage);
         }
 
         /// <summary>

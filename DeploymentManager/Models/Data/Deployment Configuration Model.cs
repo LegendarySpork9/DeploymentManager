@@ -1,6 +1,7 @@
 ﻿// Copyright © - Unpublished - Toby Hunter
 using DeploymentManager.Entities;
 using DeploymentManager.Models.Related;
+using DeploymentManager.Models.Responses.Related;
 using DeploymentManager.Models.Shared;
 
 namespace DeploymentManager.Models.Data
@@ -48,6 +49,74 @@ namespace DeploymentManager.Models.Data
             }
 
             return deploymentFiles;
+        }
+
+        /// <summary>
+        /// Converts the model to an artefact type model.
+        /// </summary>
+        public DeploymentConfigurationModel<ArtefactModel> ToArtefactDeployment()
+        {
+            return new()
+            {
+                Type = Type,
+                Environment = Environment,
+                Project = Project,
+                Artefact = (ArtefactModel)(object)Artefact,
+                PrimaryDeploymentTarget = PrimaryDeploymentTarget,
+                SecondaryDeploymentTargets = SecondaryDeploymentTargets,
+                DeploymentSettings = DeploymentSettings
+            };
+        }
+
+        /// <summary>
+        /// Converts the model to an asset type model.
+        /// </summary>
+        public DeploymentConfigurationModel<AssetModel> ToAssetDeployment()
+        {
+            return new()
+            {
+                Type = Type,
+                Environment = Environment,
+                Project = Project,
+                Artefact = (AssetModel)(object)Artefact,
+                PrimaryDeploymentTarget = PrimaryDeploymentTarget,
+                SecondaryDeploymentTargets = SecondaryDeploymentTargets,
+                DeploymentSettings = DeploymentSettings
+            };
+        }
+
+        /// <summary>
+        /// Converts the model to an upload type model.
+        /// </summary>
+        public DeploymentConfigurationModel<UploadFileModel> ToUploadDeployment()
+        {
+            return new()
+            {
+                Type = Type,
+                Environment = Environment,
+                Project = Project,
+                Artefact = (UploadFileModel)(object)Artefact,
+                PrimaryDeploymentTarget = PrimaryDeploymentTarget,
+                SecondaryDeploymentTargets = SecondaryDeploymentTargets,
+                DeploymentSettings = DeploymentSettings
+            };
+        }
+
+        /// <summary>
+        /// Converts the model to an object type model.
+        /// </summary>
+        public DeploymentConfigurationModel<object> ToObjectDeployment()
+        {
+            return new()
+            {
+                Type = Type,
+                Environment = Environment,
+                Project = Project,
+                Artefact = (object)Artefact,
+                PrimaryDeploymentTarget = PrimaryDeploymentTarget,
+                SecondaryDeploymentTargets = SecondaryDeploymentTargets,
+                DeploymentSettings = DeploymentSettings
+            };
         }
     }
 }

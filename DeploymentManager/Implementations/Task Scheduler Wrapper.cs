@@ -11,7 +11,7 @@ namespace DeploymentManager.Implementations
         /// <summary>
         /// Stops the given task.
         /// </summary>
-        public void StopTask(
+        public string? StopTask(
             string taskName,
             string device,
             DeviceAuthModel? auth = null)
@@ -19,10 +19,22 @@ namespace DeploymentManager.Implementations
             using (TaskService taskService = new(device, auth?.Username, auth?.Domain, auth?.Password))
             {
                 Task task = taskService.GetTask(taskName);
-                task.Stop();
+
+                if (!task.Definition.Settings.Enabled && task.State == TaskState.Disabled)
+                {
+                    return $"Task '{taskName}' was already stopped";
+                }
+
+                if (task.State == TaskState.Running)
+                {
+                    task.Stop();
+                }
+
                 task.Definition.Settings.Enabled = false;
                 task.RegisterChanges();
             }
+
+            return null;
         }
 
         /// <summary>

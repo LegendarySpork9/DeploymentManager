@@ -127,6 +127,8 @@ namespace DeploymentManager.Test.Services
         ]
     }
 ]";
+            _MockFileSystem.Setup(fs => fs.CheckFile(It.IsAny<string>()))
+                .ReturnsAsync(true);
             _MockFileSystem.Setup(fs => fs.ReadAllText(It.IsAny<string>()))
                 .ReturnsAsync(deploymentHistoryString);
 
@@ -181,8 +183,8 @@ namespace DeploymentManager.Test.Services
         [TestMethod]
         public async Task TestGetDeploymentHistoryEmpty()
         {
-            _MockFileSystem.Setup(fs => fs.ReadAllText(It.IsAny<string>()))
-                .ReturnsAsync(string.Empty);
+            _MockFileSystem.Setup(fs => fs.CheckFile(It.IsAny<string>()))
+                .ReturnsAsync(false);
 
             DeploymentHistoryService _deploymentHistoryService = new(
                 _MockLogger.Object,
@@ -250,8 +252,8 @@ namespace DeploymentManager.Test.Services
                 ]
             };
 
-            _MockFileSystem.Setup(fs => fs.ReadAllText(It.IsAny<string>()))
-                .ReturnsAsync(string.Empty);
+            _MockFileSystem.Setup(fs => fs.CheckFile(It.IsAny<string>()))
+                .ReturnsAsync(false);
             _MockFileSystem.Setup(fs => fs.WriteAllText(
                 It.IsAny<string>(),
                 It.IsAny<string>()));
@@ -269,7 +271,7 @@ namespace DeploymentManager.Test.Services
                 fs => fs.WriteAllText(
                     Path.Combine(
                         AppSettings.DeploymentHistoryLocation,
-                        AppSettings.Projects[0].Name),
+                        $"{AppSettings.Projects[0].Name}.json"),
                     It.IsAny<string>()),
                 Times.Once);
         }

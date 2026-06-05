@@ -14,5 +14,6 @@ namespace DeploymentManager.Models.Data.Related
         public required DateTime EndDate { get; set; }
         public required TimeSpan RunTime { get; set; }
         public List<string>? FailMessages { get; set; }
+        public List<string>? WarningMessages { get; set; }
     }
 }

@@ -4,7 +4,6 @@ using DeploymentManager.Components;
 using DeploymentManager.Implementations;
 using DeploymentManager.Models;
 using DeploymentManager.Orchestrators;
-using DeploymentManager.Orchestrators.GitHub;
 using DeploymentManager.Services;
 using DeploymentManager.Values;
 

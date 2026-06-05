@@ -1,0 +1,60 @@
+@if (IsVisible)
+{
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal fade show" style="display: block;" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Upload Deployment File</h5>
+                </div>
+
+                <div class="modal-body">
+                    <p>Select a .zip file to upload for deployment.</p>
+
+                    <div class="mb-3">
+                        <label class="form-label">File</label>
+                        <InputFile class="form-control" accept=".zip" OnChange="HandleFileSelected" disabled="@IsUploading" />
+                    </div>
+
+                    @if (SelectedFile != null)
+                    {
+                        <div class="mb-3">
+                            <small class="text-muted">@SelectedFile.Name (@FormatFileSize(SelectedFile.Size))</small>
+                        </div>
+                    }
+
+                    <div class="mb-3">
+                        <label class="form-label">Branch Id</label>
+                        <input type="text" class="form-control" @bind="BranchId" placeholder="Enter branch id" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Branch Name</label>
+                        <input type="text" class="form-control" @bind="BranchName" placeholder="Enter branch name" />
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(ErrorMessage))
+                    {
+                        <div class="alert alert-danger py-2" role="alert">
+                            @ErrorMessage
+                        </div>
+                    }
+
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-primary" disabled="@(IsUploading || SelectedFile == null)" @onclick="HandleUpload">
+                            @if (IsUploading)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            }
+                            Upload
+                        </button>
+
+                        <button type="button" class="btn btn-outline-light" @onclick="HandleCancel" disabled="@IsUploading">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

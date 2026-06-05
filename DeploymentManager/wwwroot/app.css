@@ -162,6 +162,21 @@ h1:focus {
     filter: invert(1) grayscale(100%) brightness(200%);
 }
 
+/* Dark Theme Dropdowns */
+.dropdown-menu {
+    background-color: #3E3E3E;
+    border-color: #555;
+}
+
+.dropdown-item {
+    color: #D7D7D7;
+}
+
+    .dropdown-item:hover, .dropdown-item:focus {
+        background-color: #4E4E4E;
+        color: #fff;
+    }
+
 /* Text utilities */
 .text-muted {
     color: #A9A9A9 !important;

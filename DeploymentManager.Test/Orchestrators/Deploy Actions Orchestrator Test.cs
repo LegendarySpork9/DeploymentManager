@@ -131,7 +131,7 @@ namespace DeploymentManager.Test.Orchestrators
             _MockFileSystem.Setup(fs => fs.ReadStream(It.IsAny<string>())).ReturnsAsync(fileStream);
             _MockFileSystem.Setup(fs => fs.ExtractArchive(It.IsAny<string>(), It.IsAny<FileStream>())).Returns(Task.CompletedTask);
             _MockFileSystem.Setup(fs => fs.GetFiles(It.IsAny<string>())).ReturnsAsync([@"C:\Deploy\test-artefact\file1.dll"]);
-            _MockIISClient.Setup(iis => iis.StopSite(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DeviceAuthModel?>()));
+            _MockIISClient.Setup(iis => iis.StopSite(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DeviceAuthModel?>())).Returns((string?)null);
             _MockFileSystem.Setup(fs => fs.CheckDirectory(It.IsAny<string>())).ReturnsAsync(true);
             _MockFileSystem.Setup(fs => fs.CopyFile(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.CompletedTask);
             _MockIISClient.Setup(iis => iis.StartSite(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DeviceAuthModel?>()));
@@ -189,7 +189,7 @@ namespace DeploymentManager.Test.Orchestrators
             _MockFileSystem.Setup(fs => fs.ReadStream(It.IsAny<string>())).ReturnsAsync(fileStream);
             _MockFileSystem.Setup(fs => fs.ExtractArchive(It.IsAny<string>(), It.IsAny<FileStream>())).Returns(Task.CompletedTask);
             _MockFileSystem.Setup(fs => fs.GetFiles(It.IsAny<string>())).ReturnsAsync([@"C:\Deploy\test-artefact\file1.dll"]);
-            _MockIISClient.Setup(iis => iis.StopSite(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DeviceAuthModel?>()));
+            _MockIISClient.Setup(iis => iis.StopSite(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DeviceAuthModel?>())).Returns((string?)null);
             _MockFileSystem.Setup(fs => fs.CheckDirectory(It.IsAny<string>())).ReturnsAsync(true);
             _MockFileSystem.Setup(fs => fs.CopyFile(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.CompletedTask);
             _MockFileSystem.Setup(fs => fs.DeleteDirectory(It.IsAny<string>())).Returns(Task.CompletedTask);
@@ -200,6 +200,43 @@ namespace DeploymentManager.Test.Orchestrators
 
             Assert.AreEqual(Status.Completed, result.Status);
             Assert.AreEqual(Status.Skipped, result.Stages[5].Status);
+        }
+
+        /// <summary>
+        /// Tests whether the Run method completes with warnings when the stop services stage returns a warning.
+        /// </summary>
+        [TestMethod]
+        public async Task TestRunCompletesWithWarningsWhenStopServiceWarns()
+        {
+            DeployActionsOrchestrator orchestrator = CreateOrchestrator();
+            DeploymentConfigurationModel<ArtefactModel> config = CreateConfig();
+            DeploymentHistoryModel<ArtefactModel> deployment = CreateDeploymentHistory(config);
+
+            _MockGitHubClient.Setup(c => c.DownloadArtefact(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync((@"C:\Deploy\test-artefact.zip", (string?)null));
+
+            FileStream fileStream = new(
+                Path.GetTempFileName(), FileMode.Open, FileAccess.Read,
+                FileShare.None, 4096, FileOptions.DeleteOnClose);
+
+            _MockFileSystem.Setup(fs => fs.ReadStream(It.IsAny<string>())).ReturnsAsync(fileStream);
+            _MockFileSystem.Setup(fs => fs.ExtractArchive(It.IsAny<string>(), It.IsAny<FileStream>())).Returns(Task.CompletedTask);
+            _MockFileSystem.Setup(fs => fs.GetFiles(It.IsAny<string>())).ReturnsAsync([@"C:\Deploy\test-artefact\file1.dll"]);
+            _MockIISClient.Setup(iis => iis.StopSite(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DeviceAuthModel?>())).Returns("IIS site 'TestProject' was already stopped");
+            _MockFileSystem.Setup(fs => fs.CheckDirectory(It.IsAny<string>())).ReturnsAsync(true);
+            _MockFileSystem.Setup(fs => fs.CopyFile(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.CompletedTask);
+            _MockIISClient.Setup(iis => iis.StartSite(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DeviceAuthModel?>()));
+            _MockFileSystem.Setup(fs => fs.DeleteDirectory(It.IsAny<string>())).Returns(Task.CompletedTask);
+            _MockFileSystem.Setup(fs => fs.DeleteFile(It.IsAny<string>())).Returns(Task.CompletedTask);
+
+            DeploymentHistoryModel<ArtefactModel> result = await orchestrator.Run(
+                deployment, @"C:\Deploy", config);
+
+            Assert.AreEqual(Status.CompletedWithWarnings, result.Status);
+            Assert.IsNull(result.FailedAtStage);
+            Assert.AreEqual(Status.CompletedWithWarnings, result.Stages[3].Status);
+            Assert.IsNotNull(result.Stages[3].WarningMessages);
+            Assert.HasCount(1, result.Stages[3].WarningMessages);
         }
     }
 }

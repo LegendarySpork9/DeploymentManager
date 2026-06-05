@@ -8,7 +8,7 @@ namespace DeploymentManager.Abstractions
     /// </summary>
     public interface ITaskScheduler
     {
-        void StopTask(string taskName, string device, DeviceAuthModel? auth = null);
+        string? StopTask(string taskName, string device, DeviceAuthModel? auth = null);
         void StartTask(string taskName, string device, DeviceAuthModel? auth = null);
     }
 }

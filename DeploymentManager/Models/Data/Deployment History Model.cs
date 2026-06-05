@@ -1,6 +1,7 @@
 ﻿// Copyright © - Unpublished - Toby Hunter
 using DeploymentManager.Entities;
 using DeploymentManager.Models.Data.Related;
+using DeploymentManager.Models.Responses.Related;
 
 namespace DeploymentManager.Models.Data
 {
@@ -24,5 +25,105 @@ namespace DeploymentManager.Models.Data
         public DeploymentStage? FailedAtStage { get; set; }
         public required DeploymentConfigurationModel<T> DeploymentConfiguration { get; set; }
         public required List<StageModel> Stages { get; set; }
+
+        /// <summary>
+        /// Converts the model to an artefact type model.
+        /// </summary>
+        public DeploymentHistoryModel<ArtefactModel> ToArtefactDeployment()
+        {
+            return new()
+            {
+                Id = Id,
+                Type = Type,
+                ArtefactType = ArtefactType,
+                Status = Status,
+                StartDate = StartDate,
+                EndDate = EndDate,
+                RunTime = RunTime,
+                ArtefactId = ArtefactId,
+                ArtefactName = ArtefactName,
+                ArtefactSize = ArtefactSize,
+                BranchId = BranchId,
+                BranchName = BranchName,
+                FailedAtStage = FailedAtStage,
+                DeploymentConfiguration = DeploymentConfiguration.ToArtefactDeployment(),
+                Stages = Stages
+            };
+        }
+
+        /// <summary>
+        /// Converts the model to an asset type model.
+        /// </summary>
+        public DeploymentHistoryModel<AssetModel> ToAssetDeployment()
+        {
+            return new()
+            {
+                Id = Id,
+                Type = Type,
+                ArtefactType = ArtefactType,
+                Status = Status,
+                StartDate = StartDate,
+                EndDate = EndDate,
+                RunTime = RunTime,
+                ArtefactId = ArtefactId,
+                ArtefactName = ArtefactName,
+                ArtefactSize = ArtefactSize,
+                BranchId = BranchId,
+                BranchName = BranchName,
+                FailedAtStage = FailedAtStage,
+                DeploymentConfiguration = DeploymentConfiguration.ToAssetDeployment(),
+                Stages = Stages
+            };
+        }
+
+        /// <summary>
+        /// Converts the model to an upload type model.
+        /// </summary>
+        public DeploymentHistoryModel<UploadFileModel> ToUploadDeployment()
+        {
+            return new()
+            {
+                Id = Id,
+                Type = Type,
+                ArtefactType = ArtefactType,
+                Status = Status,
+                StartDate = StartDate,
+                EndDate = EndDate,
+                RunTime = RunTime,
+                ArtefactId = ArtefactId,
+                ArtefactName = ArtefactName,
+                ArtefactSize = ArtefactSize,
+                BranchId = BranchId,
+                BranchName = BranchName,
+                FailedAtStage = FailedAtStage,
+                DeploymentConfiguration = DeploymentConfiguration.ToUploadDeployment(),
+                Stages = Stages
+            };
+        }
+
+        /// <summary>
+        /// Converts the model to an object type model.
+        /// </summary>
+        public DeploymentHistoryModel<object> ToObjectDeployment()
+        {
+            return new()
+            {
+                Id = Id,
+                Type = Type,
+                ArtefactType = ArtefactType,
+                Status = Status,
+                StartDate = StartDate,
+                EndDate = EndDate,
+                RunTime = RunTime,
+                ArtefactId = ArtefactId,
+                ArtefactName = ArtefactName,
+                ArtefactSize = ArtefactSize,
+                BranchId = BranchId,
+                BranchName = BranchName,
+                FailedAtStage = FailedAtStage,
+                DeploymentConfiguration = DeploymentConfiguration.ToObjectDeployment(),
+                Stages = Stages
+            };
+        }
     }
 }
