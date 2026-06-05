@@ -64,6 +64,11 @@ namespace DeploymentManager.Implementations
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Checks if a given file exists.
+        /// </summary>
+        public Task<bool> CheckFile(string path) => Task.FromResult(File.Exists(path));
+
         // Directory Operations
 
         /// <summary>

@@ -251,36 +251,51 @@ namespace DeploymentManager.Orchestrators
         /// <summary>
         /// Manages the deployment.
         /// </summary>
-        public async Task<DeploymentHistoryModel<T>> Deploy<T>(
-            DeploymentHistoryModel<T> deployment,
-            DeploymentConfigurationModel<T> deploymentConfiguration)
+        public async Task<DeploymentHistoryModel<object>> Deploy(
+            DeploymentHistoryModel<object> deployment,
+            DeploymentConfigurationModel<object> deploymentConfiguration,
+            Action? onStageUpdated = null)
         {
+            void SyncAndNotify<TSource>(DeploymentHistoryModel<TSource> source)
+            {
+                deployment.Status = source.Status;
+                deployment.StartDate = source.StartDate;
+                deployment.EndDate = source.EndDate;
+                deployment.RunTime = source.RunTime;
+                deployment.FailedAtStage = source.FailedAtStage;
+                onStageUpdated?.Invoke();
+            }
+
             if (deployment.Type == DeploymentType.GitHub)
             {
                 if (deploymentConfiguration.PrimaryDeploymentTarget.ArtefactSource == ArtefactSource.Actions)
                 {
                     DeployActionsOrchestrator _deployActionsOrchestrator = ActivatorUtilities.CreateInstance<DeployActionsOrchestrator>(_ServiceProvider);
 
-                    DeploymentHistoryModel<ArtefactModel> history = (DeploymentHistoryModel<ArtefactModel>)(object)deployment;
-                    DeploymentConfigurationModel<ArtefactModel> config = (DeploymentConfigurationModel<ArtefactModel>)(object)deploymentConfiguration;
+                    DeploymentHistoryModel<ArtefactModel> history = deployment.ToArtefactDeployment();
+                    DeploymentConfigurationModel<ArtefactModel> config = deploymentConfiguration.ToArtefactDeployment();
 
-                    deployment = (DeploymentHistoryModel<T>)(object)await _deployActionsOrchestrator.Run(
+                    history = await _deployActionsOrchestrator.Run(
                         history,
                         AppSettings.ArtefactDownloadLocation,
-                        config);
+                        config,
+                        () => SyncAndNotify(history));
+                    deployment = history.ToObjectDeployment();
                 }
 
                 else if (deploymentConfiguration.PrimaryDeploymentTarget.ArtefactSource == ArtefactSource.Releases)
                 {
                     DeployReleasesOrchestrator _deployReleaseOrchestrator = ActivatorUtilities.CreateInstance<DeployReleasesOrchestrator>(_ServiceProvider);
 
-                    DeploymentHistoryModel<AssetModel> history = (DeploymentHistoryModel<AssetModel>)(object)deployment;
-                    DeploymentConfigurationModel<AssetModel> config = (DeploymentConfigurationModel<AssetModel>)(object)deploymentConfiguration;
+                    DeploymentHistoryModel<AssetModel> history = deployment.ToAssetDeployment();
+                    DeploymentConfigurationModel<AssetModel> config = deploymentConfiguration.ToAssetDeployment();
 
-                    deployment = (DeploymentHistoryModel<T>)(object)await _deployReleaseOrchestrator.Run(
+                    history = await _deployReleaseOrchestrator.Run(
                         history,
                         AppSettings.ArtefactDownloadLocation,
-                        config);
+                        config,
+                        () => SyncAndNotify(history));
+                    deployment = history.ToObjectDeployment();
                 }
             }
 
@@ -288,13 +303,15 @@ namespace DeploymentManager.Orchestrators
             {
                 DeployUploadOrchestrator _deployUploadOrchestrator = ActivatorUtilities.CreateInstance<DeployUploadOrchestrator>(_ServiceProvider);
 
-                DeploymentHistoryModel<UploadFileModel> history = (DeploymentHistoryModel<UploadFileModel>)(object)deployment;
-                DeploymentConfigurationModel<UploadFileModel> config = (DeploymentConfigurationModel<UploadFileModel>)(object)deploymentConfiguration;
+                DeploymentHistoryModel<UploadFileModel> history = deployment.ToUploadDeployment();
+                DeploymentConfigurationModel<UploadFileModel> config = deploymentConfiguration.ToUploadDeployment();
 
-                deployment = (DeploymentHistoryModel<T>)(object)await _deployUploadOrchestrator.Run(
+                history = await _deployUploadOrchestrator.Run(
                     history,
                     AppSettings.ArtefactDownloadLocation,
-                    config);
+                    config,
+                    () => SyncAndNotify(history));
+                deployment = history.ToObjectDeployment();
             }
 
             await _DeploymentHistoryService.WriteDeploymentHistory(

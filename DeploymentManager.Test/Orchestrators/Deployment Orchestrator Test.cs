@@ -60,7 +60,7 @@ namespace DeploymentManager.Test.Orchestrators
         {
             _MockClock.Setup(c => c.DefaultDate).Returns(DefaultDate);
             _MockClock.Setup(c => c.DefaultTimeSpan).Returns(DefaultTimeSpan);
-            _MockFileSystem.Setup(fs => fs.ReadAllText(It.IsAny<string>())).ReturnsAsync(string.Empty);
+            _MockFileSystem.Setup(fs => fs.CheckFile(It.IsAny<string>())).ReturnsAsync(false);
 
             DeploymentHistoryService deploymentHistoryService = new(
                 _MockLogger.Object,
@@ -116,7 +116,7 @@ namespace DeploymentManager.Test.Orchestrators
         {
             _MockClock.Setup(c => c.DefaultDate).Returns(DefaultDate);
             _MockClock.Setup(c => c.DefaultTimeSpan).Returns(DefaultTimeSpan);
-            _MockFileSystem.Setup(fs => fs.ReadAllText(It.IsAny<string>())).ReturnsAsync(string.Empty);
+            _MockFileSystem.Setup(fs => fs.CheckFile(It.IsAny<string>())).ReturnsAsync(false);
 
             DeploymentHistoryService deploymentHistoryService = new(
                 _MockLogger.Object,
@@ -165,7 +165,7 @@ namespace DeploymentManager.Test.Orchestrators
         {
             _MockClock.Setup(c => c.DefaultDate).Returns(DefaultDate);
             _MockClock.Setup(c => c.DefaultTimeSpan).Returns(DefaultTimeSpan);
-            _MockFileSystem.Setup(fs => fs.ReadAllText(It.IsAny<string>())).ReturnsAsync(string.Empty);
+            _MockFileSystem.Setup(fs => fs.CheckFile(It.IsAny<string>())).ReturnsAsync(false);
 
             DeploymentHistoryService deploymentHistoryService = new(
                 _MockLogger.Object,

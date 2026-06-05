@@ -32,29 +32,39 @@ namespace DeploymentManager.Services
                 $"Stopping IIS site, {site}");
 
             bool stopped = false;
-            string? errorMessage = null;
+            string? message = null;
 
             try
             {
-                _IISClient.StopSite(
+                message = _IISClient.StopSite(
                     site,
                     device,
                     auth);
 
                 stopped = true;
 
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Info,
-                    $"Stopped IIS site, {site}");
+                if (message != null)
+                {
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Warning,
+                        message);
+                }
+
+                else
+                {
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Info,
+                        $"Stopped IIS site, {site}");
+                }
             }
 
             catch (Exception ex)
             {
-                errorMessage = ex.Message;
+                message = ex.Message;
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Warning,
-                    errorMessage);
+                    message);
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Error,
                     ex.ToString());
@@ -63,7 +73,7 @@ namespace DeploymentManager.Services
                     $"Failed to stop IIS site, {site}");
             }
 
-            return (stopped, errorMessage);
+            return (stopped, message);
         }
 
         /// <summary>

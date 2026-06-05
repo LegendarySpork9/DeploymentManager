@@ -13,6 +13,7 @@ namespace DeploymentManager.Abstractions
         Task<FileStream> ReadStream(string path);
         Task CopyFile(string source, string destination);
         Task DeleteFile(string path);
+        Task<bool> CheckFile(string path);
 
         // Directory Operations
         Task CreateDirectory(string path);

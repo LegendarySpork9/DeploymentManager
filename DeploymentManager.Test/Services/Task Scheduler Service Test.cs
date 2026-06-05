@@ -20,7 +20,8 @@ namespace DeploymentManager.Test.Services
             _MockTaskScheduler.Setup(ts => ts.StopTask(
                 It.IsAny<string>(),
                 It.IsAny<string>(),
-                null));
+                null))
+                .Returns((string?)null);
 
             TaskSchedulerService taskSchedulerService = new(
                 _MockLogger.Object,
@@ -39,6 +40,30 @@ namespace DeploymentManager.Test.Services
                     "Test Device",
                     null),
                 Times.Once);
+        }
+
+        /// <summary>
+        /// Tests whether the StopTask method returns true with a warning message when the task was already stopped.
+        /// </summary>
+        [TestMethod]
+        public async Task TestStopTaskReturnsTrueWithWarning()
+        {
+            _MockTaskScheduler.Setup(ts => ts.StopTask(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                null))
+                .Returns("Task 'Test Task' was already stopped");
+
+            TaskSchedulerService taskSchedulerService = new(
+                _MockLogger.Object,
+                _MockTaskScheduler.Object);
+
+            (bool actual, string? errorMessage) = await taskSchedulerService.StopTask(
+                "Test Task",
+                "Test Device");
+
+            Assert.IsTrue(actual);
+            Assert.AreEqual("Task 'Test Task' was already stopped", errorMessage);
         }
 
         /// <summary>

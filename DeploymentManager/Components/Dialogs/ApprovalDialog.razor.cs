@@ -6,7 +6,7 @@ using DeploymentManager.Services;
 using DeploymentManager.Values;
 using Microsoft.AspNetCore.Components;
 
-namespace DeploymentManager.Components.Shared
+namespace DeploymentManager.Components.Dialogs
 {
     public partial class ApprovalDialog
     {

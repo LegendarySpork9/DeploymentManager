@@ -42,60 +42,72 @@ namespace DeploymentManager.Services
 
             try
             {
-                string deploymentHistoryJSONString = await _FileSystem.ReadAllText(Path.Combine(
+                string filePath = Path.Combine(
                     AppSettings.DeploymentHistoryLocation,
-                    project));
-                deploymentHistory = JsonConvert.DeserializeObject<List<DeploymentHistoryModel<object>>>(deploymentHistoryJSONString) ?? [];
+                    $"{project}.json");
 
-                foreach (DeploymentHistoryModel<object> deploy in deploymentHistory)
+                if (!await _FileSystem.CheckFile(filePath))
                 {
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Info,
-                        $"Specifying date times as UTC for deploment {deploy.Id}");
-
-                    deploy.StartDate = DateTime.SpecifyKind(
-                        deploy.StartDate,
-                        DateTimeKind.Utc);
-                    deploy.EndDate = DateTime.SpecifyKind(
-                        deploy.EndDate,
-                        DateTimeKind.Utc);
-
-                    foreach (StageModel stage in deploy.Stages)
-                    {
-                        stage.StartDate = DateTime.SpecifyKind(
-                            stage.StartDate,
-                            DateTimeKind.Utc);
-                        stage.EndDate = DateTime.SpecifyKind(
-                            stage.EndDate,
-                            DateTimeKind.Utc);
-                    }
-
-                    _Logger.LogMessage(
-                        StandardValues.LoggerValues.Info,
-                        $"Specified date times as UTC for deploment {deploy.Id}");
-                    _Logger.LogMessage(
-                        StandardValues.LoggerValues.Info,
-                        $"Converting artefact for deploment {deploy.Id}");
-
-                    if (deploy.DeploymentConfiguration.Artefact is JObject artefactJson)
-                    {
-                        deploy.DeploymentConfiguration.Artefact = deploy.ArtefactType switch
-                        {
-                            ArtefactType.Artefact => artefactJson.ToObject<ArtefactModel>()!,
-                            ArtefactType.ReleaseAsset => artefactJson.ToObject<AssetModel>()!,
-                            ArtefactType.Upload => artefactJson.ToObject<UploadFileModel>()!,
-                            _ => deploy.DeploymentConfiguration.Artefact
-                        };
-                    }
-
-                    _Logger.LogMessage(
-                        StandardValues.LoggerValues.Info,
-                        $"Converted artefact for deploment {deploy.Id}");
+                        $"No deployment history file found for project, {project}");
                 }
 
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
-                    $"Fetched {deploymentHistory.Count} history records for project, {project}.");
+                else
+                {
+                    string deploymentHistoryJSONString = await _FileSystem.ReadAllText(filePath);
+                    deploymentHistory = JsonConvert.DeserializeObject<List<DeploymentHistoryModel<object>>>(deploymentHistoryJSONString) ?? [];
+
+                    foreach (DeploymentHistoryModel<object> deploy in deploymentHistory)
+                    {
+                        _Logger.LogMessage(
+                            StandardValues.LoggerValues.Info,
+                            $"Specifying date times as UTC for deploment {deploy.Id}");
+
+                        deploy.StartDate = DateTime.SpecifyKind(
+                            deploy.StartDate,
+                            DateTimeKind.Utc);
+                        deploy.EndDate = DateTime.SpecifyKind(
+                            deploy.EndDate,
+                            DateTimeKind.Utc);
+
+                        foreach (StageModel stage in deploy.Stages)
+                        {
+                            stage.StartDate = DateTime.SpecifyKind(
+                                stage.StartDate,
+                                DateTimeKind.Utc);
+                            stage.EndDate = DateTime.SpecifyKind(
+                                stage.EndDate,
+                                DateTimeKind.Utc);
+                        }
+
+                        _Logger.LogMessage(
+                            StandardValues.LoggerValues.Info,
+                            $"Specified date times as UTC for deploment {deploy.Id}");
+                        _Logger.LogMessage(
+                            StandardValues.LoggerValues.Info,
+                            $"Converting artefact for deploment {deploy.Id}");
+
+                        if (deploy.DeploymentConfiguration.Artefact is JObject artefactJson)
+                        {
+                            deploy.DeploymentConfiguration.Artefact = deploy.ArtefactType switch
+                            {
+                                ArtefactType.Artefact => artefactJson.ToObject<ArtefactModel>()!,
+                                ArtefactType.ReleaseAsset => artefactJson.ToObject<AssetModel>()!,
+                                ArtefactType.Upload => artefactJson.ToObject<UploadFileModel>()!,
+                                _ => deploy.DeploymentConfiguration.Artefact
+                            };
+                        }
+
+                        _Logger.LogMessage(
+                            StandardValues.LoggerValues.Info,
+                            $"Converted artefact for deploment {deploy.Id}");
+                    }
+
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Debug,
+                        $"Fetched {deploymentHistory.Count} history records for project, {project}.");
+                }
             }
 
             catch (Exception ex)
@@ -127,10 +139,17 @@ namespace DeploymentManager.Services
 
             try
             {
-                string deploymentHistoryJSONString = await _FileSystem.ReadAllText(Path.Combine(
+                string filePath = Path.Combine(
                     AppSettings.DeploymentHistoryLocation,
-                    project));
-                List<DeploymentHistoryModel<object>> deploymentHistory = JsonConvert.DeserializeObject<List<DeploymentHistoryModel<object>>>(deploymentHistoryJSONString) ?? [];
+                    $"{project}.json");
+
+                List<DeploymentHistoryModel<object>> deploymentHistory = [];
+
+                if (await _FileSystem.CheckFile(filePath))
+                {
+                    string deploymentHistoryJSONString = await _FileSystem.ReadAllText(filePath);
+                    deploymentHistory = JsonConvert.DeserializeObject<List<DeploymentHistoryModel<object>>>(deploymentHistoryJSONString) ?? [];
+                }
 
                 string entryJson = JsonConvert.SerializeObject(deployment);
                 DeploymentHistoryModel<object> objectEntry = JsonConvert.DeserializeObject<DeploymentHistoryModel<object>>(entryJson)!;
@@ -138,12 +157,12 @@ namespace DeploymentManager.Services
                 deploymentHistory.Add(objectEntry);
                 deploymentHistory = [.. deploymentHistory.OrderByDescending(dh => dh.Id)];
 
-                deploymentHistoryJSONString = JsonConvert.SerializeObject(deploymentHistory);
+                string updatedHistoryJSONString = JsonConvert.SerializeObject(deploymentHistory);
 
                 await _FileSystem.WriteAllText(Path.Combine(
                     AppSettings.DeploymentHistoryLocation,
-                    project),
-                    deploymentHistoryJSONString);
+                    $"{project}.json"),
+                    updatedHistoryJSONString);
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,

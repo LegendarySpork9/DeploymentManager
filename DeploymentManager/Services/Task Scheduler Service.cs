@@ -32,29 +32,39 @@ namespace DeploymentManager.Services
                 $"Stopping Task Scheduler task, {taskName}");
 
             bool stopped = false;
-            string? errorMessage = null;
+            string? message = null;
 
             try
             {
-                _TaskScheduler.StopTask(
+                message = _TaskScheduler.StopTask(
                     taskName,
                     device,
                     auth);
 
                 stopped = true;
 
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Info,
-                    $"Stopped Task Scheduler task, {taskName}");
+                if (message != null)
+                {
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Warning,
+                        message);
+                }
+
+                else
+                {
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Info,
+                        $"Stopped Task Scheduler task, {taskName}");
+                }
             }
 
             catch (Exception ex)
             {
-                errorMessage = ex.Message;
+                message = ex.Message;
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Warning,
-                    errorMessage);
+                    message);
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Error,
                     ex.ToString());
@@ -63,7 +73,7 @@ namespace DeploymentManager.Services
                     $"Failed to stop Task Scheduler task, {taskName}");
             }
 
-            return (stopped, errorMessage);
+            return (stopped, message);
         }
 
         /// <summary>
