@@ -1,0 +1,67 @@
+<div class="modal show d-block">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Deployment Progress</h5>
+                <div class="header-pills">
+                    <span class="stage-pill">Start: @FormatTime(Deployment.StartDate)</span>
+                    <span class="stage-pill">End: @FormatTime(Deployment.EndDate)</span>
+                    <span class="stage-pill">@FormatRunTime(Deployment.RunTime)</span>
+                    <span class="badge @StatusConverter.GetStatusBadgeClass(Deployment.Status)">@Deployment.Status</span>
+                </div>
+            </div>
+
+            <div class="modal-body progress-body">
+                @foreach (StageModel stage in Deployment.Stages)
+                {
+                    <div class="stage-card @StatusConverter.GetCardClass(stage.Status)">
+                        <div class="stage-card-top">
+                            <div class="stage-title">
+                                @if (stage.Status == Status.Running)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                }
+                                @DeploymentStageConverter.FormatStageName(stage.Name)
+                            </div>
+                            <div class="stage-pills">
+                                <span class="stage-pill">Start: @FormatTime(stage.StartDate)</span>
+                                <span class="stage-pill">End: @FormatTime(stage.EndDate)</span>
+                                <span class="stage-pill">@FormatRunTime(stage.RunTime)</span>
+                                <span class="stage-status-badge @StatusConverter.GetStatusBadgeClass(stage.Status)">@stage.Status</span>
+                            </div>
+                        </div>
+                        <div class="stage-card-bottom">
+                            @if (stage.FailMessages != null && stage.FailMessages.Count > 0)
+                            {
+                                <button class="error-link" @onclick="() => OnShowErrors.InvokeAsync(stage)">
+                                    @stage.FailMessages.Count error(s)
+                                </button>
+                            }
+                            else
+                            {
+                                <span class="stage-detail">0 errors</span>
+                            }
+
+                            @if (stage.WarningMessages != null && stage.WarningMessages.Count > 0)
+                            {
+                                <button class="warning-link" @onclick="() => OnShowWarnings.InvokeAsync(stage)">
+                                    @stage.WarningMessages.Count warning(s)
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+
+            @if (Deployment.Status == Status.Completed || Deployment.Status == Status.CompletedWithWarnings || Deployment.Status == Status.Failed)
+            {
+                <div class="modal-footer">
+                    <div class="d-flex justify-content-between align-items-center w-100">
+                        <span class="text-muted">Total: @FormatRunTime(Deployment.RunTime)</span>
+                        <button type="button" class="btn btn-outline-light btn-sm" @onclick="OnClose">Close</button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

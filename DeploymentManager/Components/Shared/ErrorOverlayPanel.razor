@@ -1,0 +1,20 @@
+@if (Stage != null)
+{
+    <div class="error-overlay" @onclick="OnClose">
+        <div class="error-panel" @onclick:stopPropagation="true">
+            <div class="error-header">
+                <h6 class="mb-0">@DeploymentStageConverter.FormatStageName(Stage.Name) - Errors</h6>
+                <button type="button" class="btn-close btn-close-white" @onclick="OnClose"></button>
+            </div>
+            <div class="error-body">
+                @if (Stage.FailMessages != null)
+                {
+                    @foreach (string message in Stage.FailMessages)
+                    {
+                        <div class="error-item">@message</div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+}

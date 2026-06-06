@@ -1,0 +1,20 @@
+@if (Stage != null)
+{
+    <div class="warning-overlay" @onclick="OnClose">
+        <div class="warning-panel" @onclick:stopPropagation="true">
+            <div class="warning-header">
+                <h6 class="mb-0">@DeploymentStageConverter.FormatStageName(Stage.Name) - Warnings</h6>
+                <button type="button" class="btn-close btn-close-white" @onclick="OnClose"></button>
+            </div>
+            <div class="warning-body">
+                @if (Stage.WarningMessages != null)
+                {
+                    @foreach (string message in Stage.WarningMessages)
+                    {
+                        <div class="warning-item">@message</div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+}

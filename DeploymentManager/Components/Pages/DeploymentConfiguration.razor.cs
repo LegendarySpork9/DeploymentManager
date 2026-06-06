@@ -242,8 +242,7 @@ namespace DeploymentManager.Components.Pages
                 Deployment = deployment.ToObjectDeployment();
             }
 
-            //ApprovalDialogForm.Show();
-            await Deploy();
+            ApprovalDialogForm.Show();
         }
 
         /// <summary>
@@ -326,103 +325,6 @@ namespace DeploymentManager.Components.Pages
         private void CloseWarnings()
         {
             WarningStage = null;
-        }
-
-        /// <summary>
-        /// Returns the UI friendly stage name for the deployment stages.
-        /// </summary>
-        private static string FormatStageName(DeploymentStage stage)
-        {
-            return stage switch
-            {
-                DeploymentStage.FetchArtefacts => "Fetch Artefacts",
-                DeploymentStage.ExtractArtefacts => "Extract Artefacts",
-                DeploymentStage.FetchArtefactFiles => "Fetch Artefact Files",
-                DeploymentStage.StopServices => "Stop Services",
-                DeploymentStage.MoveArtefacts => "Move Artefacts",
-                DeploymentStage.StartServices => "Start Services",
-                DeploymentStage.CleanArtefacts => "Clean Artefacts",
-                _ => stage.ToString()
-            };
-        }
-
-        /// <summary>
-        /// Returns the UI friendly format for the deployment time.
-        /// </summary>
-        private string FormatTime(DateTime dateTime)
-        {
-            if (dateTime == _Clock.DefaultDate)
-            {
-                return "-";
-            }
-
-            return dateTime.ToString("HH:mm:ss");
-        }
-
-        /// <summary>
-        /// Returns the UI friendly format for the run time.
-        /// </summary>
-        private string FormatRunTime(TimeSpan runTime)
-        {
-            if (runTime == _Clock.DefaultTimeSpan)
-            {
-                return "-";
-            }
-
-            if (runTime.TotalMinutes >= 1)
-            {
-                return runTime.ToString(@"m\:ss\.fff");
-            }
-
-            return runTime.ToString(@"s\.fff") + "s";
-        }
-
-        /// <summary>
-        /// Returns the status class for the given status.
-        /// </summary>
-        private static string GetStatusBadgeClass(Status status)
-        {
-            return status switch
-            {
-                Status.PendingApproval => "bg-secondary",
-                Status.NotStarted => "bg-secondary",
-                Status.Running => "bg-primary",
-                Status.Completed => "bg-success",
-                Status.CompletedWithWarnings => "bg-warning text-dark",
-                Status.Failed => "bg-danger",
-                Status.Skipped => "badge-skipped",
-                _ => "bg-secondary"
-            };
-        }
-
-        /// <summary>
-        /// Returns the card status class for the given status.
-        /// </summary>
-        private static string GetCardClass(Status status)
-        {
-            return status switch
-            {
-                Status.NotStarted => "card-not-started",
-                Status.Running => "card-running",
-                Status.Completed => "card-completed",
-                Status.CompletedWithWarnings => "card-completed-warnings",
-                Status.Failed => "card-failed",
-                Status.Skipped => "card-skipped",
-                _ => "card-not-started"
-            };
-        }
-
-        /// <summary>
-        /// Returns the status class for the card.
-        /// </summary>
-        private string GetOverallStatusClass()
-        {
-            if (Deployment == null)
-            {
-                return "bg-secondary";
-            }
-
-            return GetStatusBadgeClass(Deployment.Status);
         }
     }
 }
