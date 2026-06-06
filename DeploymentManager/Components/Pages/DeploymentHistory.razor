@@ -1,0 +1,124 @@
+@page "/deployment-history"
+
+<PageTitle>Deployment History</PageTitle>
+
+@if (CurrentState == PageState.ProjectSelection)
+{
+    <h4 class="page-title">Deployment History</h4>
+    <p class="page-subtitle">Select a project to view its deployment history.</p>
+
+    <div class="project-grid">
+        @foreach (ProjectModel project in AppSettings.Projects)
+        {
+            <div class="project-card" @onclick="() => SelectProject(project)">
+                <div class="project-card-icon">
+                    @switch (project.Type)
+                    {
+                        case ProjectType.Website:
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="#D7D7D7" viewBox="0 0 16 16">
+                                <path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m7.5-6.923c-.67.204-1.335.82-1.887 1.855A8 8 0 0 0 5.145 4H7.5zM4.09 4a9.3 9.3 0 0 1 .64-1.539 7 7 0 0 1 .597-.933A7.03 7.03 0 0 0 2.255 4zm-.582 3.5c.03-.877.138-1.718.312-2.5H1.674a7 7 0 0 0-.656 2.5zM4.847 5a12.5 12.5 0 0 0-.338 2.5H7.5V5zM8.5 5v2.5h2.99a12.5 12.5 0 0 0-.337-2.5zM4.51 8.5a12.5 12.5 0 0 0 .337 2.5H7.5V8.5zm3.99 0V11h2.653c.187-.765.306-1.608.338-2.5zM5.145 12q.208.58.468 1.068c.552 1.035 1.218 1.65 1.887 1.855V12zm.182 2.472a7 7 0 0 1-.597-.933A9.3 9.3 0 0 1 4.09 12H2.255a7.02 7.02 0 0 0 3.072 2.472M3.82 11a13.7 13.7 0 0 1-.312-2.5h-2.49a7 7 0 0 0 .656 2.5zM8.5 12v2.923c.67-.204 1.335-.82 1.887-1.855q.26-.487.468-1.068zm3.68-1h2.146a7 7 0 0 0 .656-2.5h-2.49a13.7 13.7 0 0 1-.312 2.5m2.802-3.5a7 7 0 0 0-.656-2.5H12.18c.174.782.282 1.623.312 2.5zM11.27 2.461c.247.464.462.98.64 1.539h1.835a7.02 7.02 0 0 0-3.072-2.472c.218.284.418.598.597.933M10.855 4a8 8 0 0 0-.468-1.068C9.835 1.897 9.17 1.282 8.5 1.077V4z" />
+                            </svg>
+                            break;
+                        case ProjectType.API:
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="#D7D7D7" viewBox="0 0 16 16">
+                                <path d="M6 9a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3A.5.5 0 0 1 6 9M3.854 4.146a.5.5 0 1 0-.708.708L4.793 6.5 3.146 8.146a.5.5 0 1 0 .708.708l2-2a.5.5 0 0 0 0-.708z" />
+                                <path d="M2 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm12 1a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z" />
+                            </svg>
+                            break;
+                        default:
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="#D7D7D7" viewBox="0 0 16 16">
+                                <path d="M5 0a.5.5 0 0 1 .5.5V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 1 0V2A2.5 2.5 0 0 1 14 4.5h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14a2.5 2.5 0 0 1-2.5 2.5v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14A2.5 2.5 0 0 1 2 11.5H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2A2.5 2.5 0 0 1 4.5 2V.5A.5.5 0 0 1 5 0m-.5 3A1.5 1.5 0 0 0 3 4.5v7A1.5 1.5 0 0 0 4.5 13h7a1.5 1.5 0 0 0 1.5-1.5v-7A1.5 1.5 0 0 0 11.5 3zM5 6.5A1.5 1.5 0 0 1 6.5 5h3A1.5 1.5 0 0 1 11 6.5v3A1.5 1.5 0 0 1 9.5 11h-3A1.5 1.5 0 0 1 5 9.5zM6.5 6a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5z" />
+                            </svg>
+                            break;
+                    }
+                </div>
+                <div class="project-card-name">@project.Name</div>
+                <span class="project-type-badge">@project.Type</span>
+            </div>
+        }
+    </div>
+}
+
+else if (CurrentState == PageState.Loading)
+{
+    <div class="d-flex justify-content-center py-5">
+        <div class="spinner-border text-light" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+
+else if (CurrentState == PageState.HistoryList)
+{
+    <div class="history-header">
+        <button class="btn btn-outline-light btn-sm back-button" @onclick="BackToProjects">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8" />
+            </svg>
+            Back
+        </button>
+        <h4 class="history-project-title">@SelectedProject!.Name</h4>
+    </div>
+
+    @if (!Deployments.Any())
+    {
+        <div class="empty-state">
+            <p>No deployment history found for this project.</p>
+        </div>
+    }
+
+    else
+    {
+        <div class="history-list">
+            @foreach (DeploymentHistoryModel<object> deployment in Deployments)
+            {
+                <div class="history-entry @GetEntryBorderClass(deployment.Status)" @onclick="() => ViewDeploymentDetail(deployment)">
+                    <div class="history-entry-content">
+                        <div class="history-left">
+                            <div class="history-artefact-name">@deployment.ArtefactName</div>
+                            <div class="history-badges">
+                                <span class="badge @StatusConverter.GetStatusBadgeClass(deployment.Status)">@StatusConverter.GetStatusDisplayText(deployment.Status)</span>
+                                <span class="badge @StatusConverter.GetDeploymentTypeBadgeClass(deployment.Type)">@deployment.Type</span>
+                            </div>
+                            <div class="history-date-range">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z" />
+                                </svg>
+                                @FormatDateTime(deployment.StartDate) &rarr; @FormatDateTime(deployment.EndDate)
+                            </div>
+                        </div>
+                        <div class="history-right">
+                            <div class="history-duration">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M8 3.5a.5.5 0 0 0-1 0V8a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 7.71z" />
+                                    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0" />
+                                </svg>
+                                @FormatRunTimeFriendly(deployment.RunTime)
+                            </div>
+                            <div class="history-project-name">@SelectedProject!.Name</div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    @if (SelectedDeployment != null)
+    {
+        <div class="deployment-detail-overlay">
+            <DeploymentProgressModal
+                Deployment="SelectedDeployment"
+                OnClose="CloseDeploymentDetail"
+                OnShowErrors="ShowErrors"
+                OnShowWarnings="ShowWarnings" />
+        </div>
+
+        <ErrorOverlayPanel
+            Stage="SelectedStage"
+            OnClose="CloseErrors" />
+
+        <WarningOverlayPanel
+            Stage="WarningStage"
+            OnClose="CloseWarnings" />
+    }
+}
