@@ -189,10 +189,6 @@ namespace DeploymentManager.Components.Pages
         /// </summary>
         private async Task HandleFileUploaded(UploadFileModel uploadFile)
         {
-            _Logger.LogMessage(
-                StandardValues.LoggerValues.Debug,
-                $"File Uploaded: {uploadFile.Name}");
-
             Artefact = uploadFile;
             UploadButtonText = $"Uploaded file \"{uploadFile.Name}\"";
             FileUploaded = true;
@@ -204,6 +200,12 @@ namespace DeploymentManager.Components.Pages
         /// </summary>
         private async Task StartDeployment()
         {
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                $"Run Additional Deploys: {DeploymentSettings.RunAdditionalDeploys}");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                $"Restart Services: {DeploymentSettings.RestartService}");
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
                 "Deploy Clicked");

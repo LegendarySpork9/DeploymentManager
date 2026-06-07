@@ -20,6 +20,8 @@ namespace DeploymentManager.Components.Shared
         public EventCallback<StageModel> OnShowErrors { get; set; }
         [Parameter]
         public EventCallback<StageModel> OnShowWarnings { get; set; }
+        [Parameter]
+        public bool AlwaysShowFooter { get; set; }
 
         private string FormatTime(DateTime dateTime)
         {

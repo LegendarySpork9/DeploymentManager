@@ -100,29 +100,41 @@
     background-color: #454545;
 }
 
-/* Entry border colours by status */
+/* Entry colours by status */
 .entry-completed {
     border-left-color: #2a5c3a;
+    background-color: rgba(40, 167, 69, 0.12);
+    border-color: rgba(40, 167, 69, 0.25);
+    border-left: 3px solid #2a5c3a;
 }
 
 .entry-completed:hover {
     border-left-color: #28a745;
+    background-color: rgba(40, 167, 69, 0.2);
 }
 
 .entry-completed-warnings {
     border-left-color: #8c6a2a;
+    background-color: rgba(240, 173, 78, 0.12);
+    border-color: rgba(240, 173, 78, 0.25);
+    border-left: 3px solid #8c6a2a;
 }
 
 .entry-completed-warnings:hover {
     border-left-color: #f0ad4e;
+    background-color: rgba(240, 173, 78, 0.2);
 }
 
 .entry-failed {
     border-left-color: #8c2a2a;
+    background-color: rgba(220, 53, 69, 0.12);
+    border-color: rgba(220, 53, 69, 0.25);
+    border-left: 3px solid #8c2a2a;
 }
 
 .entry-failed:hover {
     border-left-color: #dc3545;
+    background-color: rgba(220, 53, 69, 0.2);
 }
 
 .entry-default {

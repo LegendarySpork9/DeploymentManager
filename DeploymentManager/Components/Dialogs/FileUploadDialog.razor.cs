@@ -78,6 +78,12 @@ namespace DeploymentManager.Components.Dialogs
 
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
+                $"Branch Id {BranchId}");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                $"Branch Name: {BranchName}");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
                 "Upload Clicked");
 
             IsUploading = true;
@@ -105,7 +111,7 @@ namespace DeploymentManager.Components.Dialogs
                 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
-                    $"File uploaded: {SelectedFile.Name} ({SelectedFile.Size} bytes)");
+                    $"File Uploaded: {SelectedFile.Name} ({SelectedFile.Size} bytes)");
 
                 UploadFileModel uploadFile = new()
                 {

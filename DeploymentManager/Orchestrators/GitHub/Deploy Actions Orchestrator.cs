@@ -109,7 +109,7 @@ namespace DeploymentManager.Orchestrators.GitHub
                 $"Fetch Artefact Stage End Date: {fetch.EndDate:dd/MM/yyyy hh:mm:ss}");
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
-                $"Fetch Artefact Stage Run Time: {fetch.RunTime:d\\.hh\\:mm\\:ss}");
+                $"Fetch Artefact Stage Run Time: {fetch.RunTime:d\\.hh\\:mm\\:ss\\.fff}");
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
                 $"Finished fetch artefact stage for deployment {deployment.Id}");
@@ -164,7 +164,7 @@ namespace DeploymentManager.Orchestrators.GitHub
                     $"Extract Artefact Stage End Date: {extract.EndDate:dd/MM/yyyy hh:mm:ss}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
-                    $"Extract Artefact Stage Run Time: {extract.RunTime:d\\.hh\\:mm\\:ss}");
+                    $"Extract Artefact Stage Run Time: {extract.RunTime:d\\.hh\\:mm\\:ss\\.fff}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
                     $"Finished extract artefact stage for deployment {deployment.Id}");
@@ -270,7 +270,7 @@ namespace DeploymentManager.Orchestrators.GitHub
                     $"Fetch Artefact Files Stage End Date: {fetchFiles.EndDate:dd/MM/yyyy hh:mm:ss}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
-                    $"Fetch Artefact Files Stage Run Time: {fetchFiles.RunTime:d\\.hh\\:mm\\:ss}");
+                    $"Fetch Artefact Files Stage Run Time: {fetchFiles.RunTime:d\\.hh\\:mm\\:ss\\.fff}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
                     $"Finished fetch artefact files stage for deployment {deployment.Id}");
@@ -448,7 +448,7 @@ namespace DeploymentManager.Orchestrators.GitHub
                     $"Stop Services Stage End Date: {stopServices.EndDate:dd/MM/yyyy hh:mm:ss}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
-                    $"Stop Services Stage Run Time: {stopServices.RunTime:d\\.hh\\:mm\\:ss}");
+                    $"Stop Services Stage Run Time: {stopServices.RunTime:d\\.hh\\:mm\\:ss\\.fff}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
                     $"Finished stop services stage for deployment {deployment.Id}");
@@ -531,7 +531,7 @@ namespace DeploymentManager.Orchestrators.GitHub
                     $"Move Artefact Stage End Date: {move.EndDate:dd/MM/yyyy hh:mm:ss}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
-                    $"Move Artefact Stage Run Time: {move.RunTime:d\\.hh\\:mm\\:ss}");
+                    $"Move Artefact Stage Run Time: {move.RunTime:d\\.hh\\:mm\\:ss\\.fff}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
                     $"Finished move artefact stage for deployment {deployment.Id}");
@@ -684,7 +684,7 @@ namespace DeploymentManager.Orchestrators.GitHub
                     $"Start Services Stage End Date: {startServices.EndDate:dd/MM/yyyy hh:mm:ss}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
-                    $"Start Services Stage Run Time: {startServices.RunTime:d\\.hh\\:mm\\:ss}");
+                    $"Start Services Stage Run Time: {startServices.RunTime:d\\.hh\\:mm\\:ss\\.fff}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
                     $"Finished start services stage for deployment {deployment.Id}");
@@ -749,7 +749,7 @@ namespace DeploymentManager.Orchestrators.GitHub
                     $"Clean Artefacts Stage End Date: {cleanArtefacts.EndDate:dd/MM/yyyy hh:mm:ss}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
-                    $"Clean Artefacts Stage Run Time: {cleanArtefacts.RunTime:d\\.hh\\:mm\\:ss}");
+                    $"Clean Artefacts Stage Run Time: {cleanArtefacts.RunTime:d\\.hh\\:mm\\:ss\\.fff}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
                     $"Finished clean artefacts stage for deployment {deployment.Id}");

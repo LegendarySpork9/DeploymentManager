@@ -69,7 +69,7 @@ namespace DeploymentManager.Implementations
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
-                    "Response Code: {response.StatusCode}");
+                    $"Response Code: {response.StatusCode}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
                     $"Response Message: {response.ErrorException?.Message ?? response.Content}");
@@ -211,7 +211,7 @@ namespace DeploymentManager.Implementations
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
-                    "Response Code: {response.StatusCode}");
+                    $"Response Code: {response.StatusCode}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
                     $"Response Message: {response.ErrorException?.Message ?? response.Content}");
