@@ -17,4 +17,10 @@
     <PackageReference Include="TaskScheduler" Version="2.12.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="wwwroot\favicon.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
