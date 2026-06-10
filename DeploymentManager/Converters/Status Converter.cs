@@ -5,6 +5,9 @@ namespace DeploymentManager.Converters
 {
     public static class StatusConverter
     {
+        /// <summary>
+        /// Returns the status class for the given status.
+        /// </summary>
         public static string GetStatusBadgeClass(Status status)
         {
             return status switch
@@ -20,6 +23,9 @@ namespace DeploymentManager.Converters
             };
         }
 
+        /// <summary>
+        /// Returns the card class for the given status.
+        /// </summary>
         public static string GetCardClass(Status status)
         {
             return status switch
@@ -34,6 +40,9 @@ namespace DeploymentManager.Converters
             };
         }
 
+        /// <summary>
+        /// Returns the status display text for the given status.
+        /// </summary>
         public static string GetStatusDisplayText(Status status)
         {
             return status switch
@@ -49,6 +58,9 @@ namespace DeploymentManager.Converters
             };
         }
 
+        /// <summary>
+        /// Returns badge class for the given status.
+        /// </summary>
         public static string GetDeploymentTypeBadgeClass(DeploymentType type)
         {
             return type switch

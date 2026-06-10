@@ -45,8 +45,6 @@ namespace DeploymentManager.Components.Pages
         private int FormKey;
 
         private string ErrorMessage = string.Empty;
-        private StageModel? SelectedStage;
-        private StageModel? WarningStage;
 
         private string UploadButtonText = "Upload File";
         private ProjectModel? Project = null;
@@ -56,6 +54,8 @@ namespace DeploymentManager.Components.Pages
         private List<ArtefactModel> Artefacts = [];
         private object? Artefact = null;
         private DeploymentSettingsModel DeploymentSettings = new();
+        private StageModel? SelectedStage;
+        private StageModel? WarningStage;
 
         /// <summary>
         /// Logs opened page message.

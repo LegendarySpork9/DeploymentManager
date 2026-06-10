@@ -52,14 +52,15 @@ else
                         </div>
                         @if (DeploymentType == Entities.DeploymentType.FileUpload)
                         {
-                            <button type="submit" class="btn btn-primary btn-sm" disabled="@IsLoading" @onclick="OpenFileUploadModal">
-                                @if (IsLoading && !FileUploaded)
-                                {
-                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                }
-                                @UploadButtonText
-                            </button>
-                            <br />
+                            <div class="mb-3">
+                                <button type="submit" class="btn btn-primary btn-sm" disabled="@IsLoading" @onclick="OpenFileUploadModal">
+                                    @if (IsLoading && !FileUploaded)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                    }
+                                    @UploadButtonText
+                                </button>
+                            </div>
                         }
 
                         @if (Project != null && Environment != null && DeploymentType == Entities.DeploymentType.GitHub)

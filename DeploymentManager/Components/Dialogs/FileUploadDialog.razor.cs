@@ -39,7 +39,7 @@ namespace DeploymentManager.Components.Dialogs
         {
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
-                "Showing file upload dialog");
+                "Showing File Upload Dialog");
 
             IsVisible = true;
             ErrorMessage = string.Empty;
@@ -148,12 +148,15 @@ namespace DeploymentManager.Components.Dialogs
         {
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
-                "File upload cancelled");
+                "File Upload Cancelled");
 
             IsVisible = false;
             await OnCancelled.InvokeAsync();
         }
 
+        /// <summary>
+        /// Adds the size characters to the file size for ease of reading.
+        /// </summary>
         private static string FormatFileSize(long bytes)
         {
             string[] sizes =

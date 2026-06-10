@@ -248,7 +248,8 @@ namespace DeploymentManager.Orchestrators
 
                     (bool stopped, string? tempErrorMessage) = await _IISService.StopSite(
                         deploymentConfiguration.Project.Name,
-                        device);
+                        device,
+                        deploymentConfiguration.PrimaryDeploymentTarget.Auth);
 
                     if (stopped)
                     {
@@ -307,7 +308,8 @@ namespace DeploymentManager.Orchestrators
 
                     (bool stopped, string? tempErrorMessage) = await _TaskSchedulerService.StopTask(
                         deploymentConfiguration.Project.Name,
-                        device);
+                        device,
+                        deploymentConfiguration.PrimaryDeploymentTarget.Auth);
 
                     if (stopped)
                     {
@@ -508,7 +510,8 @@ namespace DeploymentManager.Orchestrators
 
                     (bool started, string? tempErrorMessage) = await _IISService.StartSite(
                         deploymentConfiguration.Project.Name,
-                        device);
+                        device,
+                        deploymentConfiguration.PrimaryDeploymentTarget.Auth);
 
                     if (started)
                     {
@@ -557,7 +560,8 @@ namespace DeploymentManager.Orchestrators
 
                     (bool started, string? tempErrorMessage) = await _TaskSchedulerService.StartTask(
                         deploymentConfiguration.Project.Name,
-                        device);
+                        device,
+                        deploymentConfiguration.PrimaryDeploymentTarget.Auth);
 
                     if (started)
                     {

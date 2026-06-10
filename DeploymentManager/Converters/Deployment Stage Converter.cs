@@ -5,6 +5,9 @@ namespace DeploymentManager.Converters
 {
     public static class DeploymentStageConverter
     {
+        /// <summary>
+        /// Returns the UI friendly name of the given develeopment stage.
+        /// </summary>
         public static string FormatStageName(DeploymentStage stage)
         {
             return stage switch

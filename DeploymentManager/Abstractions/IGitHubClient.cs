@@ -1,7 +1,11 @@
-﻿using DeploymentManager.Models.Responses;
+﻿// Copyright © - Unpublished - Toby Hunter
+using DeploymentManager.Models.Responses;
 
 namespace DeploymentManager.Abstractions
 {
+    /// <summary>
+    /// Interface GitHub API calls.
+    /// </summary>
     public interface IGitHubClient
     {
         Task<ArtefactListModel?> GetArtefacts(string repository);

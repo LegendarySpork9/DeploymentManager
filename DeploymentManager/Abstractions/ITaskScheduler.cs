@@ -4,7 +4,7 @@ using DeploymentManager.Models.Related;
 namespace DeploymentManager.Abstractions
 {
     /// <summary>
-    /// Interface for Task Scheduler.
+    /// Interface for Task Scheduler operations.
     /// </summary>
     public interface ITaskScheduler
     {

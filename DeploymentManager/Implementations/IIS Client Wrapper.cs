@@ -96,7 +96,7 @@ namespace DeploymentManager.Implementations
         }
 
         /// <summary>
-        /// Impersonates a user on another machines with the given details.
+        /// Impersonates a user on another machine with the given details.
         /// </summary>
         private void RunWithOptionalImpersonation(
             DeviceAuthModel? auth,

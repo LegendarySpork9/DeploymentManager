@@ -30,6 +30,9 @@ namespace DeploymentManager.Components.Pages
         private StageModel? SelectedStage;
         private StageModel? WarningStage;
 
+        /// <summary>
+        /// Logs the information page open message.
+        /// </summary>
         protected override void OnInitialized()
         {
             _Logger.LogMessage(
@@ -37,6 +40,9 @@ namespace DeploymentManager.Components.Pages
                 "Opened Deployment History Page");
         }
 
+        /// <summary>
+        /// Sets the project selected.
+        /// </summary>
         private async Task SelectProject(ProjectModel project)
         {
             _Logger.LogMessage(
@@ -45,6 +51,7 @@ namespace DeploymentManager.Components.Pages
 
             SelectedProject = project;
             CurrentState = PageState.Loading;
+
             await InvokeAsync(StateHasChanged);
 
             Deployments = await _DeploymentHistoryService.GetDeploymentHistory(project.Name);
@@ -52,11 +59,14 @@ namespace DeploymentManager.Components.Pages
             CurrentState = PageState.HistoryList;
         }
 
+        /// <summary>
+        /// Resets the selected project.
+        /// </summary>
         private void BackToProjects()
         {
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
-                "Back to projects clicked");
+                "Back To Projects Clicked");
 
             SelectedProject = null;
             Deployments = [];
@@ -66,15 +76,21 @@ namespace DeploymentManager.Components.Pages
             CurrentState = PageState.ProjectSelection;
         }
 
-        private void ViewDeploymentDetail(DeploymentHistoryModel<object> deployment)
+        /// <summary>
+        /// Opens the deployment modal for the given deployment.
+        /// </summary>
+        private void ViewDeployment(DeploymentHistoryModel<object> deployment)
         {
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
-                $"Viewing deployment detail: {deployment.Id}");
+                $"Viewing Deployment: {deployment.Id}");
 
             SelectedDeployment = deployment;
         }
 
+        /// <summary>
+        /// Closes the deployment modal.
+        /// </summary>
         private void CloseDeploymentDetail()
         {
             SelectedDeployment = null;
@@ -82,36 +98,41 @@ namespace DeploymentManager.Components.Pages
             WarningStage = null;
         }
 
+        /// <summary>
+        /// Opens the error model for the given stage.
+        /// </summary>
         private void ShowErrors(StageModel stage)
         {
             SelectedStage = stage;
         }
 
+        /// <summary>
+        /// Closes the error model for the previously selected stage.
+        /// </summary>
         private void CloseErrors()
         {
             SelectedStage = null;
         }
 
+        /// <summary>
+        /// Opens the warnings model for the given stage.
+        /// </summary>
         private void ShowWarnings(StageModel stage)
         {
             WarningStage = stage;
         }
 
+        /// <summary>
+        /// Closes the warnings model for the previously selected stage.
+        /// </summary>
         private void CloseWarnings()
         {
             WarningStage = null;
         }
 
-        private string FormatDateTime(DateTime dateTime)
-        {
-            return DateTimeConverter.FormatDateTime(dateTime, _Clock.DefaultDate);
-        }
-
-        private string FormatRunTimeFriendly(TimeSpan runTime)
-        {
-            return DateTimeConverter.FormatRunTimeFriendly(runTime, _Clock.DefaultTimeSpan);
-        }
-
+        /// <summary>
+        /// Returns the class name for the entry border.
+        /// </summary>
         private static string GetEntryBorderClass(Status status)
         {
             return status switch
@@ -123,6 +144,9 @@ namespace DeploymentManager.Components.Pages
             };
         }
 
+        /// <summary>
+        /// Enums for the various page states.
+        /// </summary>
         private enum PageState
         {
             ProjectSelection,
