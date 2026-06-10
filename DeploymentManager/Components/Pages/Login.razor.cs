@@ -1,4 +1,5 @@
 ﻿// Copyright © - Unpublished - Toby Hunter
+using System.Text;
 using DeploymentManager.Abstractions;
 using DeploymentManager.Functions;
 using DeploymentManager.Models;
@@ -6,7 +7,6 @@ using DeploymentManager.Models.Forms;
 using DeploymentManager.Values;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-using System.Text;
 
 namespace DeploymentManager.Components.Pages
 {

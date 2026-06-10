@@ -1,5 +1,5 @@
 ﻿// Copyright © - Unpublished - Toby Hunter
-using DeploymentManager.Models.Related;
+using DeploymentManager.Models.Shared;
 
 namespace DeploymentManager.Abstractions
 {

@@ -106,7 +106,7 @@ namespace DeploymentManager.Orchestrators
 
             List<StageModel> stages = [];
 
-            if (artefactType  == ArtefactType.Upload)
+            if (artefactType == ArtefactType.Upload)
             {
                 stages =
                 [

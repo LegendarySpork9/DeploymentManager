@@ -1,6 +1,6 @@
 ﻿// Copyright © - Unpublished - Toby Hunter
 using DeploymentManager.Abstractions;
-using DeploymentManager.Models.Related;
+using DeploymentManager.Models.Shared;
 using DeploymentManager.Values;
 
 namespace DeploymentManager.Services
@@ -107,7 +107,7 @@ namespace DeploymentManager.Services
 
             catch (Exception ex)
             {
-                errorMessage= ex.Message;
+                errorMessage = ex.Message;
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Warning,

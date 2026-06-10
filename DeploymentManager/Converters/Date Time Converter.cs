@@ -73,14 +73,14 @@ namespace DeploymentManager.Converters
                 formattedFriendlyRunTime = "-";
             }
 
-            if (runTime.TotalHours >= 1)
-            {
-                formattedFriendlyRunTime = $"{(int)runTime.TotalHours}h {runTime.Minutes}m";
-            }
-
             if (runTime.TotalMinutes >= 1)
             {
                 formattedFriendlyRunTime = $"{(int)runTime.TotalMinutes}m {runTime.Seconds}s";
+            }
+
+            if (runTime.TotalHours >= 1)
+            {
+                formattedFriendlyRunTime = $"{(int)runTime.TotalHours}h {runTime.Minutes}m";
             }
 
             return formattedFriendlyRunTime;

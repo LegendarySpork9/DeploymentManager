@@ -2,8 +2,6 @@
 using DeploymentManager.Abstractions;
 using DeploymentManager.Entities;
 using DeploymentManager.Models.Data;
-using DeploymentManager.Models.Data.Related;
-using DeploymentManager.Models.Related;
 using DeploymentManager.Models.Responses.Related;
 using DeploymentManager.Models.Shared;
 using DeploymentManager.Orchestrators.GitHub;
@@ -27,14 +25,25 @@ namespace DeploymentManager.Test.Orchestrators
 
         private DeployActionsOrchestrator CreateOrchestrator()
         {
-            _MockClock.Setup(c => c.UtcNow).Returns(TestDate);
-            _MockClock.Setup(c => c.DefaultDate).Returns(DefaultDate);
-            _MockClock.Setup(c => c.DefaultTimeSpan).Returns(TimeSpan.Zero);
+            _MockClock.Setup(c => c.UtcNow)
+                .Returns(TestDate);
+            _MockClock.Setup(c => c.DefaultDate)
+                .Returns(DefaultDate);
+            _MockClock.Setup(c => c.DefaultTimeSpan)
+                .Returns(TimeSpan.Zero);
 
-            GitHubService gitHubService = new(_MockLogger.Object, _MockGitHubClient.Object);
-            DocumentService documentService = new(_MockLogger.Object, _MockFileSystem.Object);
-            IISService iisService = new(_MockLogger.Object, _MockIISClient.Object);
-            TaskSchedulerService taskSchedulerService = new(_MockLogger.Object, _MockTaskScheduler.Object);
+            GitHubService gitHubService = new(
+                _MockLogger.Object,
+                _MockGitHubClient.Object);
+            DocumentService documentService = new(
+                _MockLogger.Object,
+                _MockFileSystem.Object);
+            IISService iisService = new(
+                _MockLogger.Object,
+                _MockIISClient.Object);
+            TaskSchedulerService taskSchedulerService = new(
+                _MockLogger.Object,
+                _MockTaskScheduler.Object);
 
             return new DeployActionsOrchestrator(
                 _MockLogger.Object,
@@ -56,7 +65,11 @@ namespace DeploymentManager.Test.Orchestrators
                     Type = ProjectType.Website,
                     Name = "TestProject",
                     Directory = @"inetpub\wwwroot\TestProject",
-                    GitHub = new() { Repository = "test-repo", Artefact = "test-artefact" }
+                    GitHub = new()
+                    {
+                        Repository = "test-repo",
+                        Artefact = "test-artefact"
+                    }
                 },
                 Artefact = new()
                 {
@@ -64,7 +77,12 @@ namespace DeploymentManager.Test.Orchestrators
                     Name = "test-artefact",
                     Size_in_Bytes = 1048576,
                     Archive_Download_Url = "https://api.github.com/repos/owner/repo/actions/artifacts/123/zip",
-                    Workflow_Run = new() { Id = 456, Head_Branch = "main", Head_Sha = "abc123" }
+                    Workflow_Run = new()
+                    {
+                        Id = 456,
+                        Head_Branch = "main",
+                        Head_Sha = "abc123"
+                    }
                 },
                 PrimaryDeploymentTarget = new()
                 {
@@ -78,8 +96,7 @@ namespace DeploymentManager.Test.Orchestrators
             };
         }
 
-        private static DeploymentHistoryModel<ArtefactModel> CreateDeploymentHistory(
-            DeploymentConfigurationModel<ArtefactModel> config)
+        private static DeploymentHistoryModel<ArtefactModel> CreateDeploymentHistory(DeploymentConfigurationModel<ArtefactModel> config)
         {
             DateTime defaultDate = new(1900, 01, 01, 0, 0, 0, DateTimeKind.Utc);
 
@@ -121,27 +138,58 @@ namespace DeploymentManager.Test.Orchestrators
             DeploymentConfigurationModel<ArtefactModel> config = CreateConfig();
             DeploymentHistoryModel<ArtefactModel> deployment = CreateDeploymentHistory(config);
 
-            _MockGitHubClient.Setup(c => c.DownloadArtefact(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-                .ReturnsAsync((@"C:\Deploy\test-artefact.zip", (string?)null));
+            _MockGitHubClient.Setup(c => c.DownloadArtefact(
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>()))
+                .ReturnsAsync((
+                    @"C:\Deploy\test-artefact.zip",
+                    (string?)null));
 
             FileStream fileStream = new(
-                Path.GetTempFileName(), FileMode.Open, FileAccess.Read,
-                FileShare.None, 4096, FileOptions.DeleteOnClose);
+                Path.GetTempFileName(),
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.None,
+                4096,
+                FileOptions.DeleteOnClose);
 
-            _MockFileSystem.Setup(fs => fs.ReadStream(It.IsAny<string>())).ReturnsAsync(fileStream);
-            _MockFileSystem.Setup(fs => fs.ExtractArchive(It.IsAny<string>(), It.IsAny<FileStream>())).Returns(Task.CompletedTask);
-            _MockFileSystem.Setup(fs => fs.GetFiles(It.IsAny<string>())).ReturnsAsync([@"C:\Deploy\test-artefact\file1.dll"]);
-            _MockIISClient.Setup(iis => iis.StopSite(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DeviceAuthModel?>())).Returns((string?)null);
-            _MockFileSystem.Setup(fs => fs.CheckDirectory(It.IsAny<string>())).ReturnsAsync(true);
-            _MockFileSystem.Setup(fs => fs.CopyFile(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.CompletedTask);
-            _MockIISClient.Setup(iis => iis.StartSite(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DeviceAuthModel?>()));
-            _MockFileSystem.Setup(fs => fs.DeleteDirectory(It.IsAny<string>())).Returns(Task.CompletedTask);
-            _MockFileSystem.Setup(fs => fs.DeleteFile(It.IsAny<string>())).Returns(Task.CompletedTask);
+            _MockFileSystem.Setup(fs => fs.ReadStream(It.IsAny<string>()))
+                .ReturnsAsync(fileStream);
+            _MockFileSystem.Setup(fs => fs.ExtractArchive(
+                    It.IsAny<string>(),
+                    It.IsAny<FileStream>()))
+                .Returns(Task.CompletedTask);
+            _MockFileSystem.Setup(fs => fs.GetFiles(It.IsAny<string>()))
+                .ReturnsAsync([@"C:\Deploy\test-artefact\file1.dll"]);
+            _MockIISClient.Setup(iis => iis.StopSite(
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<DeviceAuthModel?>()))
+                .Returns((string?)null);
+            _MockFileSystem.Setup(fs => fs.CheckDirectory(It.IsAny<string>()))
+                .ReturnsAsync(true);
+            _MockFileSystem.Setup(fs => fs.CopyFile(
+                    It.IsAny<string>(),
+                    It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
+            _MockIISClient.Setup(iis => iis.StartSite(
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<DeviceAuthModel?>()));
+            _MockFileSystem.Setup(fs => fs.DeleteDirectory(It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
+            _MockFileSystem.Setup(fs => fs.DeleteFile(It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
 
             DeploymentHistoryModel<ArtefactModel> result = await orchestrator.Run(
-                deployment, @"C:\Deploy", config);
+                deployment,
+                @"C:\Deploy",
+                config);
 
-            Assert.AreEqual(Status.Completed, result.Status);
+            Assert.AreEqual(
+                Status.Completed,
+                result.Status);
             Assert.IsNull(result.FailedAtStage);
             Assert.IsTrue(result.Stages.All(s => s.Status == Status.Completed));
         }
@@ -156,15 +204,28 @@ namespace DeploymentManager.Test.Orchestrators
             DeploymentConfigurationModel<ArtefactModel> config = CreateConfig();
             DeploymentHistoryModel<ArtefactModel> deployment = CreateDeploymentHistory(config);
 
-            _MockGitHubClient.Setup(c => c.DownloadArtefact(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-                .ReturnsAsync((string.Empty, (string?)"Download failed"));
+            _MockGitHubClient.Setup(c => c.DownloadArtefact(
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>()))
+                .ReturnsAsync((
+                    string.Empty,
+                    (string?)"Download failed"));
 
             DeploymentHistoryModel<ArtefactModel> result = await orchestrator.Run(
-                deployment, @"C:\Deploy", config);
+                deployment,
+                @"C:\Deploy",
+                config);
 
-            Assert.AreEqual(Status.Failed, result.Status);
-            Assert.AreEqual(DeploymentStage.FetchArtefacts, result.FailedAtStage);
-            Assert.AreEqual(Status.Failed, result.Stages[0].Status);
+            Assert.AreEqual(
+                Status.Failed,
+                result.Status);
+            Assert.AreEqual(
+                DeploymentStage.FetchArtefacts,
+                result.FailedAtStage);
+            Assert.AreEqual(
+                Status.Failed,
+                result.Stages[0].Status);
             Assert.IsNotNull(result.Stages[0].FailMessages);
         }
 
@@ -176,30 +237,63 @@ namespace DeploymentManager.Test.Orchestrators
         {
             DeployActionsOrchestrator orchestrator = CreateOrchestrator();
             DeploymentConfigurationModel<ArtefactModel> config = CreateConfig();
-            config.DeploymentSettings = new() { RestartService = false };
+            config.DeploymentSettings = new()
+            {
+                RestartService = false
+            };
             DeploymentHistoryModel<ArtefactModel> deployment = CreateDeploymentHistory(config);
 
-            _MockGitHubClient.Setup(c => c.DownloadArtefact(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-                .ReturnsAsync((@"C:\Deploy\test-artefact.zip", (string?)null));
+            _MockGitHubClient.Setup(c => c.DownloadArtefact(
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>()))
+                .ReturnsAsync((
+                    @"C:\Deploy\test-artefact.zip",
+                    (string?)null));
 
             FileStream fileStream = new(
-                Path.GetTempFileName(), FileMode.Open, FileAccess.Read,
-                FileShare.None, 4096, FileOptions.DeleteOnClose);
+                Path.GetTempFileName(),
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.None,
+                4096,
+                FileOptions.DeleteOnClose);
 
-            _MockFileSystem.Setup(fs => fs.ReadStream(It.IsAny<string>())).ReturnsAsync(fileStream);
-            _MockFileSystem.Setup(fs => fs.ExtractArchive(It.IsAny<string>(), It.IsAny<FileStream>())).Returns(Task.CompletedTask);
-            _MockFileSystem.Setup(fs => fs.GetFiles(It.IsAny<string>())).ReturnsAsync([@"C:\Deploy\test-artefact\file1.dll"]);
-            _MockIISClient.Setup(iis => iis.StopSite(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DeviceAuthModel?>())).Returns((string?)null);
-            _MockFileSystem.Setup(fs => fs.CheckDirectory(It.IsAny<string>())).ReturnsAsync(true);
-            _MockFileSystem.Setup(fs => fs.CopyFile(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.CompletedTask);
-            _MockFileSystem.Setup(fs => fs.DeleteDirectory(It.IsAny<string>())).Returns(Task.CompletedTask);
-            _MockFileSystem.Setup(fs => fs.DeleteFile(It.IsAny<string>())).Returns(Task.CompletedTask);
+            _MockFileSystem.Setup(fs => fs.ReadStream(It.IsAny<string>()))
+                .ReturnsAsync(fileStream);
+            _MockFileSystem.Setup(fs => fs.ExtractArchive(
+                    It.IsAny<string>(),
+                    It.IsAny<FileStream>()))
+                .Returns(Task.CompletedTask);
+            _MockFileSystem.Setup(fs => fs.GetFiles(It.IsAny<string>()))
+                .ReturnsAsync([@"C:\Deploy\test-artefact\file1.dll"]);
+            _MockIISClient.Setup(iis => iis.StopSite(
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<DeviceAuthModel?>()))
+                .Returns((string?)null);
+            _MockFileSystem.Setup(fs => fs.CheckDirectory(It.IsAny<string>()))
+                .ReturnsAsync(true);
+            _MockFileSystem.Setup(fs => fs.CopyFile(
+                    It.IsAny<string>(),
+                    It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
+            _MockFileSystem.Setup(fs => fs.DeleteDirectory(It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
+            _MockFileSystem.Setup(fs => fs.DeleteFile(It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
 
             DeploymentHistoryModel<ArtefactModel> result = await orchestrator.Run(
-                deployment, @"C:\Deploy", config);
+                deployment,
+                @"C:\Deploy",
+                config);
 
-            Assert.AreEqual(Status.Completed, result.Status);
-            Assert.AreEqual(Status.Skipped, result.Stages[5].Status);
+            Assert.AreEqual(
+                Status.Completed,
+                result.Status);
+            Assert.AreEqual(
+                Status.Skipped,
+                result.Stages[5].Status);
         }
 
         /// <summary>
@@ -212,31 +306,66 @@ namespace DeploymentManager.Test.Orchestrators
             DeploymentConfigurationModel<ArtefactModel> config = CreateConfig();
             DeploymentHistoryModel<ArtefactModel> deployment = CreateDeploymentHistory(config);
 
-            _MockGitHubClient.Setup(c => c.DownloadArtefact(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-                .ReturnsAsync((@"C:\Deploy\test-artefact.zip", (string?)null));
+            _MockGitHubClient.Setup(c => c.DownloadArtefact(
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>()))
+                .ReturnsAsync((
+                    @"C:\Deploy\test-artefact.zip",
+                    (string?)null));
 
             FileStream fileStream = new(
-                Path.GetTempFileName(), FileMode.Open, FileAccess.Read,
-                FileShare.None, 4096, FileOptions.DeleteOnClose);
+                Path.GetTempFileName(),
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.None,
+                4096,
+                FileOptions.DeleteOnClose);
 
-            _MockFileSystem.Setup(fs => fs.ReadStream(It.IsAny<string>())).ReturnsAsync(fileStream);
-            _MockFileSystem.Setup(fs => fs.ExtractArchive(It.IsAny<string>(), It.IsAny<FileStream>())).Returns(Task.CompletedTask);
-            _MockFileSystem.Setup(fs => fs.GetFiles(It.IsAny<string>())).ReturnsAsync([@"C:\Deploy\test-artefact\file1.dll"]);
-            _MockIISClient.Setup(iis => iis.StopSite(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DeviceAuthModel?>())).Returns("IIS site 'TestProject' was already stopped");
-            _MockFileSystem.Setup(fs => fs.CheckDirectory(It.IsAny<string>())).ReturnsAsync(true);
-            _MockFileSystem.Setup(fs => fs.CopyFile(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.CompletedTask);
-            _MockIISClient.Setup(iis => iis.StartSite(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DeviceAuthModel?>()));
-            _MockFileSystem.Setup(fs => fs.DeleteDirectory(It.IsAny<string>())).Returns(Task.CompletedTask);
-            _MockFileSystem.Setup(fs => fs.DeleteFile(It.IsAny<string>())).Returns(Task.CompletedTask);
+            _MockFileSystem.Setup(fs => fs.ReadStream(It.IsAny<string>()))
+                .ReturnsAsync(fileStream);
+            _MockFileSystem.Setup(fs => fs.ExtractArchive(
+                    It.IsAny<string>(),
+                    It.IsAny<FileStream>()))
+                .Returns(Task.CompletedTask);
+            _MockFileSystem.Setup(fs => fs.GetFiles(It.IsAny<string>()))
+                .ReturnsAsync([@"C:\Deploy\test-artefact\file1.dll"]);
+            _MockIISClient.Setup(iis => iis.StopSite(
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<DeviceAuthModel?>()))
+                .Returns("IIS site 'TestProject' was already stopped");
+            _MockFileSystem.Setup(fs => fs.CheckDirectory(It.IsAny<string>()))
+                .ReturnsAsync(true);
+            _MockFileSystem.Setup(fs => fs.CopyFile(
+                    It.IsAny<string>(),
+                    It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
+            _MockIISClient.Setup(iis => iis.StartSite(
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<DeviceAuthModel?>()));
+            _MockFileSystem.Setup(fs => fs.DeleteDirectory(It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
+            _MockFileSystem.Setup(fs => fs.DeleteFile(It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
 
             DeploymentHistoryModel<ArtefactModel> result = await orchestrator.Run(
-                deployment, @"C:\Deploy", config);
+                deployment,
+                @"C:\Deploy",
+                config);
 
-            Assert.AreEqual(Status.CompletedWithWarnings, result.Status);
+            Assert.AreEqual(
+                Status.CompletedWithWarnings,
+                result.Status);
             Assert.IsNull(result.FailedAtStage);
-            Assert.AreEqual(Status.CompletedWithWarnings, result.Stages[3].Status);
+            Assert.AreEqual(
+                Status.CompletedWithWarnings,
+                result.Stages[3].Status);
             Assert.IsNotNull(result.Stages[3].WarningMessages);
-            Assert.HasCount(1, result.Stages[3].WarningMessages);
+            Assert.HasCount(
+                1,
+                result.Stages[3].WarningMessages);
         }
     }
 }

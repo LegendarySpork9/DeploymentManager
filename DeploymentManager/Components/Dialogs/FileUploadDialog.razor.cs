@@ -108,7 +108,7 @@ namespace DeploymentManager.Components.Dialogs
                         filePath,
                         browserStream);
                 }
-                
+
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
                     $"File Uploaded: {SelectedFile.Name} ({SelectedFile.Size} bytes)");

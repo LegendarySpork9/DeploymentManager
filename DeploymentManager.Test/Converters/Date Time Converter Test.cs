@@ -15,7 +15,9 @@ namespace DeploymentManager.Test.Converters
         [TestMethod]
         public void TestFormatTimeDefault()
         {
-            string actual = DateTimeConverter.FormatTime(DefaultDate, DefaultDate);
+            string actual = DateTimeConverter.FormatTime(
+                DefaultDate,
+                DefaultDate);
 
             Assert.AreEqual(
                 "-",
@@ -29,10 +31,12 @@ namespace DeploymentManager.Test.Converters
         public void TestFormatTimeValid()
         {
             DateTime dateTime = new(2026, 6, 2, 14, 30, 45);
-            string actual = DateTimeConverter.FormatTime(dateTime, DefaultDate);
+            string actual = DateTimeConverter.FormatTime(
+                dateTime,
+                DefaultDate);
 
             Assert.AreEqual(
-                "14:30:45",
+                "14:30:45.000",
                 actual);
         }
 
@@ -42,7 +46,9 @@ namespace DeploymentManager.Test.Converters
         [TestMethod]
         public void TestFormatDateTimeDefault()
         {
-            string actual = DateTimeConverter.FormatDateTime(DefaultDate, DefaultDate);
+            string actual = DateTimeConverter.FormatDateTime(
+                DefaultDate,
+                DefaultDate);
 
             Assert.AreEqual(
                 "-",
@@ -56,7 +62,9 @@ namespace DeploymentManager.Test.Converters
         public void TestFormatDateTimeValid()
         {
             DateTime dateTime = new(2026, 6, 2, 4, 16, 37);
-            string actual = DateTimeConverter.FormatDateTime(dateTime, DefaultDate);
+            string actual = DateTimeConverter.FormatDateTime(
+                dateTime,
+                DefaultDate);
 
             Assert.AreEqual(
                 "02 Jun 2026 04:16:37",
@@ -69,7 +77,9 @@ namespace DeploymentManager.Test.Converters
         [TestMethod]
         public void TestFormatRunTimeDefault()
         {
-            string actual = DateTimeConverter.FormatRunTime(DefaultTimeSpan, DefaultTimeSpan);
+            string actual = DateTimeConverter.FormatRunTime(
+                DefaultTimeSpan,
+                DefaultTimeSpan);
 
             Assert.AreEqual(
                 "-",
@@ -83,7 +93,9 @@ namespace DeploymentManager.Test.Converters
         public void TestFormatRunTimeMinutes()
         {
             TimeSpan runTime = new(0, 0, 2, 15, 123);
-            string actual = DateTimeConverter.FormatRunTime(runTime, DefaultTimeSpan);
+            string actual = DateTimeConverter.FormatRunTime(
+                runTime,
+                DefaultTimeSpan);
 
             Assert.AreEqual(
                 "2:15.123",
@@ -97,7 +109,9 @@ namespace DeploymentManager.Test.Converters
         public void TestFormatRunTimeSeconds()
         {
             TimeSpan runTime = new(0, 0, 0, 45, 678);
-            string actual = DateTimeConverter.FormatRunTime(runTime, DefaultTimeSpan);
+            string actual = DateTimeConverter.FormatRunTime(
+                runTime,
+                DefaultTimeSpan);
 
             Assert.AreEqual(
                 "45.678s",
@@ -110,7 +124,9 @@ namespace DeploymentManager.Test.Converters
         [TestMethod]
         public void TestFormatRunTimeFriendlyDefault()
         {
-            string actual = DateTimeConverter.FormatRunTimeFriendly(DefaultTimeSpan, DefaultTimeSpan);
+            string actual = DateTimeConverter.FormatRunTimeFriendly(
+                DefaultTimeSpan,
+                DefaultTimeSpan);
 
             Assert.AreEqual(
                 "-",
@@ -124,7 +140,9 @@ namespace DeploymentManager.Test.Converters
         public void TestFormatRunTimeFriendlyHours()
         {
             TimeSpan runTime = new(1, 30, 0);
-            string actual = DateTimeConverter.FormatRunTimeFriendly(runTime, DefaultTimeSpan);
+            string actual = DateTimeConverter.FormatRunTimeFriendly(
+                runTime,
+                DefaultTimeSpan);
 
             Assert.AreEqual(
                 "1h 30m",
@@ -138,7 +156,9 @@ namespace DeploymentManager.Test.Converters
         public void TestFormatRunTimeFriendlyMinutes()
         {
             TimeSpan runTime = new(0, 10, 15);
-            string actual = DateTimeConverter.FormatRunTimeFriendly(runTime, DefaultTimeSpan);
+            string actual = DateTimeConverter.FormatRunTimeFriendly(
+                runTime,
+                DefaultTimeSpan);
 
             Assert.AreEqual(
                 "10m 15s",
@@ -152,7 +172,9 @@ namespace DeploymentManager.Test.Converters
         public void TestFormatRunTimeFriendlySeconds()
         {
             TimeSpan runTime = new(0, 0, 45);
-            string actual = DateTimeConverter.FormatRunTimeFriendly(runTime, DefaultTimeSpan);
+            string actual = DateTimeConverter.FormatRunTimeFriendly(
+                runTime,
+                DefaultTimeSpan);
 
             Assert.AreEqual(
                 "45s",

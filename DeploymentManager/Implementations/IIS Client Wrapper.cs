@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using DeploymentManager.Abstractions;
-using DeploymentManager.Models.Related;
+using DeploymentManager.Models.Shared;
 using Microsoft.Web.Administration;
 
 namespace DeploymentManager.Implementations

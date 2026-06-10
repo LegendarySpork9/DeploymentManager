@@ -1,5 +1,5 @@
 ﻿// Copyright © - Unpublished - Toby Hunter
-namespace DeploymentManager.Models.Related
+namespace DeploymentManager.Models.Shared
 {
     /// <summary>
     /// Stores the settings for connecting to another device.

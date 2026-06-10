@@ -111,7 +111,7 @@ namespace DeploymentManager.Implementations
             using (ZipArchive zip = new(fileStream))
             {
                 await zip.ExtractToDirectoryAsync(path);
-            }                
+            }
         }
     }
 }

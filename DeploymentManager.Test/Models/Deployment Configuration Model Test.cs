@@ -1,10 +1,7 @@
 // Copyright © - Unpublished - Toby Hunter
 using DeploymentManager.Entities;
 using DeploymentManager.Models.Data;
-using DeploymentManager.Models.Data.Related;
-using DeploymentManager.Models.Related;
 using DeploymentManager.Models.Responses.Related;
-using DeploymentManager.Models.Shared;
 
 namespace DeploymentManager.Test.Models
 {
@@ -50,10 +47,16 @@ namespace DeploymentManager.Test.Models
 
             List<DeploymentModel> result = config.ToDeploymentModel();
 
-            Assert.HasCount(1, result);
-            Assert.AreEqual(ArtefactFileDeploymentType.Primary, result[0].ArtefactDeploymentType);
+            Assert.HasCount(
+                1,
+                result);
+            Assert.AreEqual(
+                ArtefactFileDeploymentType.Primary,
+                result[0].ArtefactDeploymentType);
             Assert.IsNull(result[0].Device);
-            Assert.AreEqual(@"inetpub\wwwroot\TestProject", result[0].Directory);
+            Assert.AreEqual(
+                @"inetpub\wwwroot\TestProject",
+                result[0].Directory);
             Assert.IsEmpty(result[0].ArtefactFiles);
         }
 
@@ -104,11 +107,19 @@ namespace DeploymentManager.Test.Models
 
             List<DeploymentModel> result = config.ToDeploymentModel();
 
-            Assert.HasCount(2, result);
-            Assert.AreEqual(ArtefactFileDeploymentType.Primary, result[0].ArtefactDeploymentType);
+            Assert.HasCount(
+                2,
+                result);
+            Assert.AreEqual(
+                ArtefactFileDeploymentType.Primary,
+                result[0].ArtefactDeploymentType);
             Assert.IsNull(result[0].Device);
-            Assert.AreEqual(ArtefactFileDeploymentType.Secondary, result[1].ArtefactDeploymentType);
-            Assert.AreEqual("SecondaryDevice", result[1].Device);
+            Assert.AreEqual(
+                ArtefactFileDeploymentType.Secondary,
+                result[1].ArtefactDeploymentType);
+            Assert.AreEqual(
+                "SecondaryDevice",
+                result[1].Device);
         }
 
         /// <summary>
@@ -151,12 +162,24 @@ namespace DeploymentManager.Test.Models
 
             DeploymentConfigurationModel<ArtefactModel> result = config.ToArtefactDeployment();
 
-            Assert.AreEqual(DeploymentType.GitHub, result.Type);
-            Assert.AreEqual(DeploymentEnvironment.Live, result.Environment);
-            Assert.AreEqual("TestProject", result.Project.Name);
-            Assert.AreEqual(123, result.Artefact.Id);
-            Assert.AreEqual("test-artefact", result.Artefact.Name);
-            Assert.AreEqual("TestDevice", result.PrimaryDeploymentTarget.Device);
+            Assert.AreEqual(
+                DeploymentType.GitHub,
+                result.Type);
+            Assert.AreEqual(
+                DeploymentEnvironment.Live,
+                result.Environment);
+            Assert.AreEqual(
+                "TestProject",
+                result.Project.Name);
+            Assert.AreEqual(
+                123,
+                result.Artefact.Id);
+            Assert.AreEqual(
+                "test-artefact",
+                result.Artefact.Name);
+            Assert.AreEqual(
+                "TestDevice",
+                result.PrimaryDeploymentTarget.Device);
             Assert.IsNull(result.SecondaryDeploymentTargets);
         }
 
@@ -200,10 +223,18 @@ namespace DeploymentManager.Test.Models
 
             DeploymentConfigurationModel<AssetModel> result = config.ToAssetDeployment();
 
-            Assert.AreEqual(DeploymentType.GitHub, result.Type);
-            Assert.AreEqual(101, result.Artefact.Id);
-            Assert.AreEqual("release.zip", result.Artefact.Name);
-            Assert.AreEqual(2097152, result.Artefact.Size);
+            Assert.AreEqual(
+                DeploymentType.GitHub,
+                result.Type);
+            Assert.AreEqual(
+                101,
+                result.Artefact.Id);
+            Assert.AreEqual(
+                "release.zip",
+                result.Artefact.Name);
+            Assert.AreEqual(
+                2097152,
+                result.Artefact.Size);
         }
 
         /// <summary>
@@ -247,10 +278,18 @@ namespace DeploymentManager.Test.Models
 
             DeploymentConfigurationModel<UploadFileModel> result = config.ToUploadDeployment();
 
-            Assert.AreEqual(DeploymentType.FileUpload, result.Type);
-            Assert.AreEqual(1, result.Artefact.Id);
-            Assert.AreEqual("test-upload", result.Artefact.Name);
-            Assert.AreEqual(@"C:\Uploads", result.Artefact.Directory);
+            Assert.AreEqual(
+                DeploymentType.FileUpload,
+                result.Type);
+            Assert.AreEqual(
+                1,
+                result.Artefact.Id);
+            Assert.AreEqual(
+                "test-upload",
+                result.Artefact.Name);
+            Assert.AreEqual(
+                @"C:\Uploads",
+                result.Artefact.Directory);
         }
 
         /// <summary>
@@ -292,11 +331,19 @@ namespace DeploymentManager.Test.Models
 
             DeploymentConfigurationModel<object> result = config.ToObjectDeployment();
 
-            Assert.AreEqual(DeploymentType.FileUpload, result.Type);
-            Assert.AreEqual(DeploymentEnvironment.Live, result.Environment);
-            Assert.AreEqual("TestProject", result.Project.Name);
+            Assert.AreEqual(
+                DeploymentType.FileUpload,
+                result.Type);
+            Assert.AreEqual(
+                DeploymentEnvironment.Live,
+                result.Environment);
+            Assert.AreEqual(
+                "TestProject",
+                result.Project.Name);
             Assert.IsInstanceOfType<UploadFileModel>(result.Artefact);
-            Assert.AreEqual("TestDevice", result.PrimaryDeploymentTarget.Device);
+            Assert.AreEqual(
+                "TestDevice",
+                result.PrimaryDeploymentTarget.Device);
         }
     }
 }
