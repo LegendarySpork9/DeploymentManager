@@ -1,9 +1,9 @@
 // Copyright © - Unpublished - Toby Hunter
-using System.Runtime.InteropServices;
-using System.Security.Principal;
 using DeploymentManager.Abstractions;
 using DeploymentManager.Models.Shared;
 using Microsoft.Web.Administration;
+using System.Runtime.InteropServices;
+using System.Security.Principal;
 
 namespace DeploymentManager.Implementations
 {
@@ -55,6 +55,14 @@ namespace DeploymentManager.Implementations
                     if (appPool.State != ObjectState.Stopped)
                     {
                         appPool.Stop();
+                    }
+
+                    int waited = 0;
+
+                    while (appPool.WorkerProcesses.Count > 0 && waited < 30000)
+                    {
+                        Thread.Sleep(500);
+                        waited += 500;
                     }
                 }
             });

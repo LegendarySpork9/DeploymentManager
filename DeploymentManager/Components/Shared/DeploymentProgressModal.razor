@@ -31,13 +31,13 @@
                             </div>
                             <div class="stage-pills">
                                 <span class="stage-pill">Start: @DateTimeConverter.FormatTime(
-                                    Deployment.StartDate,
+                                    stage.StartDate,
                                     _Clock.DefaultDate)</span>
                                 <span class="stage-pill">End: @DateTimeConverter.FormatTime(
-                                    Deployment.EndDate,
+                                    stage.EndDate,
                                     _Clock.DefaultDate)</span>
                                 <span class="stage-pill">@DateTimeConverter.FormatRunTime(
-                                    Deployment.RunTime,
+                                    stage.RunTime,
                                     _Clock.DefaultTimeSpan)</span>
                                 <span class="stage-status-badge @StatusConverter.GetStatusBadgeClass(stage.Status)">@stage.Status</span>
                             </div>

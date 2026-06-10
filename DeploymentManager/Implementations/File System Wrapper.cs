@@ -18,7 +18,11 @@ namespace DeploymentManager.Implementations
         /// </summary>
         public async Task WriteAllText(
             string path,
-            string text) => await File.WriteAllTextAsync(path, text);
+            string text)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            await File.WriteAllTextAsync(path, text);
+        }
 
         /// <summary>
         /// Creates/updates a given file with the given stream.

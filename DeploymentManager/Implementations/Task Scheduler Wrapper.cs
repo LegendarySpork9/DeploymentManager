@@ -28,6 +28,15 @@ namespace DeploymentManager.Implementations
                 if (task.State == TaskState.Running)
                 {
                     task.Stop();
+
+                    int waited = 0;
+
+                    while (task.State == TaskState.Running && waited < 30000)
+                    {
+                        Thread.Sleep(500);
+                        waited += 500;
+                        task = taskService.GetTask(taskName);
+                    }
                 }
 
                 task.Definition.Settings.Enabled = false;

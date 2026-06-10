@@ -650,60 +650,57 @@ namespace DeploymentManager.Orchestrators
                 finishedStages.Add(startServices);
             }
 
-            if (finishedStages.All(fs => fs.Status == Status.Completed || fs.Status == Status.CompletedWithWarnings || fs.Status == Status.Skipped))
-            {
-                _Logger.LogMessage(
+            _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
                     $"Starting clean artefacts stage for deployment {deployment.Id}");
 
-                StageModel cleanArtefacts = deployment.Stages[5];
-                cleanArtefacts.Status = Status.Running;
-                cleanArtefacts.StartDate = _Clock.UtcNow;
+            StageModel cleanArtefacts = deployment.Stages[5];
+            cleanArtefacts.Status = Status.Running;
+            cleanArtefacts.StartDate = _Clock.UtcNow;
 
-                onStageUpdated?.Invoke();
+            onStageUpdated?.Invoke();
 
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
-                    $"Clean Artefacts Stage Start Date: {cleanArtefacts.StartDate:dd/MM/yyyy hh:mm:ss}");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                $"Clean Artefacts Stage Start Date: {cleanArtefacts.StartDate:dd/MM/yyyy hh:mm:ss}");
 
-                (bool deleted, errorMessage) = await _DocumentService.DeleteArtefact(
-                    deploymentConfiguration.Artefact.Name,
-                    uploadedFile,
-                    extractedArtefactFile);
+            (bool deleted, errorMessage) = await _DocumentService.DeleteArtefact(
+                deploymentConfiguration.Artefact.Name,
+                uploadedFile,
+                extractedArtefactFile);
 
-                if (deleted)
-                {
-                    cleanArtefacts.Status = Status.Completed;
-                    cleanArtefacts.EndDate = _Clock.UtcNow;
-                    cleanArtefacts.RunTime = cleanArtefacts.EndDate - cleanArtefacts.StartDate;
-                }
-
-                else
-                {
-                    deployment.FailedAtStage = DeploymentStage.CleanArtefacts;
-                    cleanArtefacts.Status = Status.Failed;
-                    cleanArtefacts.EndDate = _Clock.UtcNow;
-                    cleanArtefacts.RunTime = cleanArtefacts.EndDate - cleanArtefacts.StartDate;
-                    cleanArtefacts.FailMessages = [errorMessage ?? "No error message received from Document Service"];
-                }
-
-                onStageUpdated?.Invoke();
-
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
-                    $"Clean Artefacts Stage Status: {cleanArtefacts.Status}");
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
-                    $"Clean Artefacts Stage End Date: {cleanArtefacts.EndDate:dd/MM/yyyy hh:mm:ss}");
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
-                    $"Clean Artefacts Stage Run Time: {cleanArtefacts.RunTime:d\\.hh\\:mm\\:ss\\.fff}");
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Info,
-                    $"Finished clean artefacts stage for deployment {deployment.Id}");
-
-                finishedStages.Add(cleanArtefacts);
+            if (deleted)
+            {
+                cleanArtefacts.Status = Status.Completed;
+                cleanArtefacts.EndDate = _Clock.UtcNow;
+                cleanArtefacts.RunTime = cleanArtefacts.EndDate - cleanArtefacts.StartDate;
             }
+
+            else
+            {
+                deployment.FailedAtStage = DeploymentStage.CleanArtefacts;
+                cleanArtefacts.Status = Status.Failed;
+                cleanArtefacts.EndDate = _Clock.UtcNow;
+                cleanArtefacts.RunTime = cleanArtefacts.EndDate - cleanArtefacts.StartDate;
+                cleanArtefacts.FailMessages = [errorMessage ?? "No error message received from Document Service"];
+            }
+
+            onStageUpdated?.Invoke();
+
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                $"Clean Artefacts Stage Status: {cleanArtefacts.Status}");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                $"Clean Artefacts Stage End Date: {cleanArtefacts.EndDate:dd/MM/yyyy hh:mm:ss}");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                $"Clean Artefacts Stage Run Time: {cleanArtefacts.RunTime:d\\.hh\\:mm\\:ss\\.fff}");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Info,
+                $"Finished clean artefacts stage for deployment {deployment.Id}");
+
+            finishedStages.Add(cleanArtefacts);
 
             if (finishedStages.Count == deployment.Stages.Count && finishedStages.All(fs => fs.Status == Status.Completed || fs.Status == Status.CompletedWithWarnings || fs.Status == Status.Skipped))
             {
