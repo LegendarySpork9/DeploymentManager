@@ -60,6 +60,20 @@ namespace DeploymentManager.Converters
         }
 
         /// <summary>
+        /// Returns the formatted date group header with ordinal suffix.
+        /// </summary>
+        public static string FormatDateGroupHeader(DateTime date)
+        {
+            int day = date.Day;
+            string suffix = (day % 10 == 1 && day != 11) ? "st"
+                          : (day % 10 == 2 && day != 12) ? "nd"
+                          : (day % 10 == 3 && day != 13) ? "rd"
+                          : "th";
+
+            return $"{day}{suffix} {date:MMMM yyyy}";
+        }
+
+        /// <summary>
         /// Returns the formatted friendly run time.
         /// </summary>
         public static string FormatRunTimeFriendly(

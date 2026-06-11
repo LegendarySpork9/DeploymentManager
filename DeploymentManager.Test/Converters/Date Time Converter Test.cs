@@ -180,5 +180,99 @@ namespace DeploymentManager.Test.Converters
                 "45s",
                 actual);
         }
+
+        /// <summary>
+        /// Tests whether FormatDateGroupHeader returns the correct ordinal suffix for "st" days.
+        /// </summary>
+        [TestMethod]
+        public void TestFormatDateGroupHeaderSt()
+        {
+            DateTime date = new(2026, 5, 1);
+            string actual = DateTimeConverter.FormatDateGroupHeader(date);
+
+            Assert.AreEqual(
+                "1st May 2026",
+                actual);
+        }
+
+        /// <summary>
+        /// Tests whether FormatDateGroupHeader returns the correct ordinal suffix for "nd" days.
+        /// </summary>
+        [TestMethod]
+        public void TestFormatDateGroupHeaderNd()
+        {
+            DateTime date = new(2026, 5, 2);
+            string actual = DateTimeConverter.FormatDateGroupHeader(date);
+
+            Assert.AreEqual(
+                "2nd May 2026",
+                actual);
+        }
+
+        /// <summary>
+        /// Tests whether FormatDateGroupHeader returns the correct ordinal suffix for "rd" days.
+        /// </summary>
+        [TestMethod]
+        public void TestFormatDateGroupHeaderRd()
+        {
+            DateTime date = new(2026, 5, 3);
+            string actual = DateTimeConverter.FormatDateGroupHeader(date);
+
+            Assert.AreEqual(
+                "3rd May 2026",
+                actual);
+        }
+
+        /// <summary>
+        /// Tests whether FormatDateGroupHeader returns the correct ordinal suffix for "th" days.
+        /// </summary>
+        [TestMethod]
+        public void TestFormatDateGroupHeaderTh()
+        {
+            DateTime date = new(2026, 5, 10);
+            string actual = DateTimeConverter.FormatDateGroupHeader(date);
+
+            Assert.AreEqual(
+                "10th May 2026",
+                actual);
+        }
+
+        /// <summary>
+        /// Tests whether FormatDateGroupHeader returns "th" for the 11th, 12th, and 13th.
+        /// </summary>
+        [TestMethod]
+        public void TestFormatDateGroupHeaderTeens()
+        {
+            Assert.AreEqual(
+                "11th May 2026",
+                DateTimeConverter.FormatDateGroupHeader(new(2026, 5, 11)));
+
+            Assert.AreEqual(
+                "12th May 2026",
+                DateTimeConverter.FormatDateGroupHeader(new(2026, 5, 12)));
+
+            Assert.AreEqual(
+                "13th May 2026",
+                DateTimeConverter.FormatDateGroupHeader(new(2026, 5, 13)));
+        }
+
+        /// <summary>
+        /// Tests whether FormatDateGroupHeader returns the correct ordinal suffix for 21st, 22nd, 23rd.
+        /// </summary>
+        [TestMethod]
+        public void TestFormatDateGroupHeaderTwenties()
+        {
+            Assert.AreEqual(
+                "21st May 2026",
+                DateTimeConverter.FormatDateGroupHeader(new(2026, 5, 21)));
+
+            Assert.AreEqual(
+                "22nd May 2026",
+                DateTimeConverter.FormatDateGroupHeader(new(2026, 5, 22)));
+
+            Assert.AreEqual(
+                "23rd May 2026",
+                DateTimeConverter.FormatDateGroupHeader(new(2026, 5, 23)));
+        }
     }
 }
