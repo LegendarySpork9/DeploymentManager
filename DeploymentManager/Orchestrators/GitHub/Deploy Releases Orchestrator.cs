@@ -116,7 +116,7 @@ namespace DeploymentManager.Orchestrators.GitHub
 
             string extractedArtefactFile = Path.Combine(
                 artefactDownloadLocation,
-                deploymentConfiguration.Artefact.Name);
+                Path.GetFileNameWithoutExtension(deploymentConfiguration.Artefact.Name));
 
             if (finishedStages.All(fs => fs.Status == Status.Completed))
             {
@@ -198,7 +198,7 @@ namespace DeploymentManager.Orchestrators.GitHub
                     $"Fetch Artefact Files Stage Start Date: {fetchFiles.StartDate:dd/MM/yyyy hh:mm:ss}");
 
                 (string[] files, errorMessage) = await _DocumentService.GetExtractedArtefactFiles(
-                        deploymentConfiguration.Artefact.Name,
+                        Path.GetFileNameWithoutExtension(deploymentConfiguration.Artefact.Name),
                         extractedArtefactFile);
 
                 List<IgnoreModel> ignore = deploymentConfiguration.Project.Ignore ?? [];
@@ -491,7 +491,7 @@ namespace DeploymentManager.Orchestrators.GitHub
                     }
 
                     (bool moved, List<string> tempErrorMessages) = await _DocumentService.MoveArtefactFiles(
-                        deploymentConfiguration.Artefact.Name,
+                        Path.GetFileNameWithoutExtension(deploymentConfiguration.Artefact.Name),
                         Path.Combine(
                             $"{drive}:",
                             deploymentToPerform.Directory),
@@ -721,7 +721,7 @@ namespace DeploymentManager.Orchestrators.GitHub
                 $"Clean Artefacts Stage Start Date: {cleanArtefacts.StartDate:dd/MM/yyyy hh:mm:ss}");
 
             (bool deleted, errorMessage) = await _DocumentService.DeleteArtefact(
-                deploymentConfiguration.Artefact.Name,
+                Path.GetFileNameWithoutExtension(deploymentConfiguration.Artefact.Name),
                 downloadedArtefactFile,
                 extractedArtefactFile);
 

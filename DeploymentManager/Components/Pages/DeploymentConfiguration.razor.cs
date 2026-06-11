@@ -51,7 +51,8 @@ namespace DeploymentManager.Components.Pages
         private DeploymentEnvironment? DeployEnvironment = null;
         private EnvironmentModel? Environment = null;
         private DeploymentType? DeploymentType = null;
-        private List<ArtefactModel> Artefacts = [];
+        private List<object> Artefacts = [];
+        private List<string> ArtefactSelect = [];
         private object? Artefact = null;
         private DeploymentSettingsModel DeploymentSettings = new();
         private StageModel? SelectedStage;
@@ -142,11 +143,35 @@ namespace DeploymentManager.Components.Pages
             {
                 DeploymentType = Entities.DeploymentType.GitHub;
 
-                ArtefactListModel? artefactList = await _GitHubService.GetArtefacts(Project.GitHub.Repository);
-
-                if (artefactList != null)
+                if (Environment != null && Environment.ArtefactSource == ArtefactSource.Actions)
                 {
-                    Artefacts = artefactList.Artifacts.FindAll(a => a.Name.Contains(Project.GitHub.Artefact));
+                    ArtefactListModel? artefactList = await _GitHubService.GetArtefacts(Project.GitHub.Repository);
+
+                    if (artefactList != null)
+                    {
+                        List<ArtefactModel> artefacts = artefactList.Artifacts.FindAll(a => a.Name.Contains(Project.GitHub.Artefact) && a.Archive_Download_Url.Contains(".zip"));
+
+                        Artefacts = [.. artefacts];
+                        ArtefactSelect = [.. artefacts.Select(a => a.Name)];
+                    }
+                }
+
+                else if (Environment != null && Environment.ArtefactSource == ArtefactSource.Releases)
+                {
+                    List<ReleaseModel>? releases = await _GitHubService.GetReleases(Project.GitHub.Repository);
+
+                    if (releases != null)
+                    {
+                        List<AssetModel> artefacts = [];
+
+                        foreach (ReleaseModel release in releases)
+                        {
+                            artefacts.AddRange(release.Assets.FindAll(a => a.Name.Contains(Project.GitHub.Artefact) && a.Name.Contains(".zip")));
+                        }
+
+                        Artefacts = [.. artefacts];
+                        ArtefactSelect = [.. artefacts.Select(a => a.Name)];
+                    }
                 }
             }
 
@@ -167,7 +192,22 @@ namespace DeploymentManager.Components.Pages
                 StandardValues.LoggerValues.Debug,
                 $"Selected Artefact: {artefact}");
 
-            Artefact = Artefacts.First(a => a.Name == artefact);
+            if (DeploymentType == Entities.DeploymentType.GitHub)
+            {
+                if (Environment != null && Environment.ArtefactSource == ArtefactSource.Actions)
+                {
+                    List<ArtefactModel> artefacts = [.. Artefacts.Cast<ArtefactModel>()];
+
+                    Artefact = artefacts.First(a => a.Name == artefact);
+                }
+
+                else if (Environment != null && Environment.ArtefactSource == ArtefactSource.Releases)
+                {
+                    List<AssetModel> artefacts = [.. Artefacts.Cast<AssetModel>()];
+
+                    Artefact = artefacts.First(a => a.Name == artefact);
+                }
+            }
 
             IsReadyForDeployment = true;
         }
