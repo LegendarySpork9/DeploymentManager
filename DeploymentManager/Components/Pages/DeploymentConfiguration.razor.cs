@@ -149,7 +149,7 @@ namespace DeploymentManager.Components.Pages
 
                     if (artefactList != null)
                     {
-                        List<ArtefactModel> artefacts = artefactList.Artifacts.FindAll(a => a.Name.Contains(Project.GitHub.Artefact) && a.Archive_Download_Url.Contains(".zip"));
+                        List<ArtefactModel> artefacts = artefactList.Artifacts.FindAll(a => a.Name.Contains(Project.GitHub.Artefact) && a.Archive_Download_Url.Contains("/zip"));
 
                         Artefacts = [.. artefacts];
                         ArtefactSelect = [.. artefacts.Select(a => a.Name)];
