@@ -208,9 +208,7 @@ namespace DeploymentManager.Orchestrators.GitHub
                     string fileName = Path.GetFileName(file);
                     string? directory = Path.GetDirectoryName(file);
 
-                    if (!ignore.Select(i => i.Name)
-                            .Contains(fileName) && (directory != null && !ignore.Select(i => i.Name)
-                                .Contains(directory)))
+                    if (!ignore.Any(i => fileName.Contains(i.Name)) && (directory != null && !ignore.Any(i => directory.Contains(i.Name))))
                     {
                         string relativePath = Path.GetRelativePath(
                             extractedArtefactFile,

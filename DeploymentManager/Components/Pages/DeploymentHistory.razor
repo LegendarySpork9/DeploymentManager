@@ -34,6 +34,40 @@
                 </div>
                 <div class="project-card-name">@project.Name</div>
                 <span class="project-type-badge">@project.Type</span>
+
+                <div class="environment-indicators">
+                    @foreach (EnvironmentModel env in AppSettings.Environments)
+                    {
+                        DeploymentStatusModel? status = GetStatus(project.Name, env.Name);
+
+                        <div class="env-indicator" tabindex="0">
+                            <span class="status-dot @GetStatusDotClass(status)"></span>
+                            <span class="env-indicator-label">@env.Name</span>
+
+                            @if (status != null)
+                            {
+                                <div class="status-tooltip">
+                                    <div class="tooltip-row">
+                                        <span class="tooltip-label">Artefact</span>
+                                        <span class="tooltip-value">@status.ArtefactName</span>
+                                    </div>
+                                    <div class="tooltip-row">
+                                        <span class="tooltip-label">Branch</span>
+                                        <span class="tooltip-value">@status.BranchName</span>
+                                    </div>
+                                    <div class="tooltip-row">
+                                        <span class="tooltip-label">Deployed</span>
+                                        <span class="tooltip-value">@DateTimeConverter.FormatDateTime(status.DeployedAt, _Clock.DefaultDate)</span>
+                                    </div>
+                                    <div class="tooltip-row">
+                                        <span class="tooltip-label">Status</span>
+                                        <span class="tooltip-value">@StatusConverter.GetStatusDisplayText(status.Status)</span>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
             </div>
         }
     </div>
@@ -58,6 +92,40 @@ else if (CurrentState == PageState.HistoryList)
             Back
         </button>
         <h4 class="history-project-title">@SelectedProject!.Name</h4>
+    </div>
+
+    <div class="environment-status-bar">
+        @foreach (EnvironmentModel env in AppSettings.Environments)
+        {
+            DeploymentStatusModel? status = GetStatus(SelectedProject!.Name, env.Name);
+
+            <div class="env-status-block" tabindex="0">
+                <span class="status-dot @GetStatusDotClass(status)"></span>
+                <span class="env-status-label">@env.Name</span>
+
+                @if (status != null)
+                {
+                    <div class="status-tooltip">
+                        <div class="tooltip-row">
+                            <span class="tooltip-label">Artefact</span>
+                            <span class="tooltip-value">@status.ArtefactName</span>
+                        </div>
+                        <div class="tooltip-row">
+                            <span class="tooltip-label">Branch</span>
+                            <span class="tooltip-value">@status.BranchName</span>
+                        </div>
+                        <div class="tooltip-row">
+                            <span class="tooltip-label">Deployed</span>
+                            <span class="tooltip-value">@DateTimeConverter.FormatDateTime(status.DeployedAt, _Clock.DefaultDate)</span>
+                        </div>
+                        <div class="tooltip-row">
+                            <span class="tooltip-label">Status</span>
+                            <span class="tooltip-value">@StatusConverter.GetStatusDisplayText(status.Status)</span>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
     </div>
 
     @if (!Deployments.Any())

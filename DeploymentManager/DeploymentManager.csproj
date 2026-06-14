@@ -5,7 +5,23 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+    <Title>Deployment Manager</Title>
+    <Version>1.0.0</Version>
+    <Authors>Hunter Industries</Authors>
+    <Product>Deployment Manager</Product>
+    <Description>A custom build deploy manager to control remote deployment of self hosted applications and services.</Description>
+    <Copyright>Copyright ©  2026</Copyright>
+    <PackageIcon>favicon.ico</PackageIcon>
+    <RepositoryType>git</RepositoryType>
+    <FileVersion>1.0.0</FileVersion>
+    <AssemblyVersion>1.0.0</AssemblyVersion>
+    <RepositoryUrl>https://github.com/LegendarySpork9/DeploymentManager</RepositoryUrl>
+    <ApplicationIcon>Content\favicon.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Content\favicon.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="log4net" Version="3.3.1" />
@@ -20,7 +36,16 @@
   <ItemGroup>
     <Content Update="wwwroot\favicon.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Content\favicon.ico">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

@@ -26,18 +26,21 @@ namespace DeploymentManager.Components.Pages
         private PageState CurrentState = PageState.ProjectSelection;
         private ProjectModel? SelectedProject;
         private List<DeploymentHistoryModel<object>> Deployments = [];
+        private List<DeploymentStatusModel> DeploymentStatuses = [];
         private DeploymentHistoryModel<object>? SelectedDeployment;
         private StageModel? SelectedStage;
         private StageModel? WarningStage;
 
         /// <summary>
-        /// Logs the information page open message.
+        /// Logs the information page open message and loads deployment statuses.
         /// </summary>
-        protected override void OnInitialized()
+        protected override async Task OnInitializedAsync()
         {
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
                 "Opened Deployment History Page");
+
+            DeploymentStatuses = await _DeploymentHistoryService.GetDeploymentStatus();
         }
 
         /// <summary>
@@ -141,6 +144,31 @@ namespace DeploymentManager.Components.Pages
                 Status.CompletedWithWarnings => "entry-completed-warnings",
                 Status.Failed => "entry-failed",
                 _ => "entry-default"
+            };
+        }
+
+        /// <summary>
+        /// Returns the deployment status for the given project and environment.
+        /// </summary>
+        private DeploymentStatusModel? GetStatus(string projectName, DeploymentEnvironment environment)
+        {
+            return DeploymentStatuses.FirstOrDefault(ds =>
+                ds.Project == projectName &&
+                ds.Environment == environment);
+        }
+
+        /// <summary>
+        /// Returns the CSS class for the status dot colour.
+        /// </summary>
+        private static string GetStatusDotClass(DeploymentStatusModel? status)
+        {
+            if (status == null) return "status-dot-none";
+
+            return status.Status switch
+            {
+                Status.Completed => "status-dot-completed",
+                Status.CompletedWithWarnings => "status-dot-warnings",
+                _ => "status-dot-none"
             };
         }
 
