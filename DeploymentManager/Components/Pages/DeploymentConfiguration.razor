@@ -52,13 +52,15 @@ else
                         </div>
                         @if (DeploymentType == Entities.DeploymentType.FileUpload)
                         {
-                            <button type="submit" class="btn btn-primary btn-sm" disabled="@IsLoading" @onclick="OpenFileUploadModal">
-                                @if (IsLoading && !FileUploaded)
-                                {
-                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                }
-                                @UploadButtonText
-                            </button>
+                            <div class="mb-3">
+                                <button type="submit" class="btn btn-primary btn-sm" disabled="@IsLoading" @onclick="OpenFileUploadModal">
+                                    @if (IsLoading && !FileUploaded)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                    }
+                                    @UploadButtonText
+                                </button>
+                            </div>
                         }
 
                         @if (Project != null && Environment != null && DeploymentType == Entities.DeploymentType.GitHub)
@@ -74,13 +76,22 @@ else
                             {
                                 <div class="mb-3">
                                     <label class="form-label">Artefact</label>
-                                    <select class="form-control" disabled="@(Artefact != null)" @onchange="(e) => SetArtefact((string)e.Value)">
-                                        <option value="" disabled selected>Select an option</option>
-                                        @foreach (ArtefactModel artefact in Artefacts)
-                                        {
-                                            <option value="@artefact.Name">@artefact.Name</option>
-                                        }
-                                    </select>
+                                    @if (Artefact == null)
+                                    {
+                                        <select class="form-control scrollable-select" size="@Math.Min(ArtefactSelect.Count + 1, 10)" @onchange="(e) => SetArtefact((string)e.Value)">
+                                            <option value="" disabled selected>Select an option</option>
+                                            @foreach (string artefact in ArtefactSelect)
+                                            {
+                                                <option value="@artefact">@artefact</option>
+                                            }
+                                        </select>
+                                    }
+                                    else
+                                    {
+                                        <select class="form-control" disabled>
+                                            <option selected>@SelectedArtefact</option>
+                                        </select>
+                                    }
                                 </div>
                             }
                         }

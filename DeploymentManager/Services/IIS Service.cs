@@ -1,6 +1,6 @@
 // Copyright © - Unpublished - Toby Hunter
 using DeploymentManager.Abstractions;
-using DeploymentManager.Models.Related;
+using DeploymentManager.Models.Shared;
 using DeploymentManager.Values;
 
 namespace DeploymentManager.Services

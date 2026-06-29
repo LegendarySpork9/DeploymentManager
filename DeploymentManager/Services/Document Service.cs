@@ -46,7 +46,7 @@ namespace DeploymentManager.Services
                     _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
                     $"Extracted artefact, {Path.GetFileNameWithoutExtension(file)}, to {path}");
-                }                    
+                }
             }
 
             catch (Exception ex)
@@ -210,7 +210,7 @@ namespace DeploymentManager.Services
             {
                 await _FileSystem.DeleteDirectory(extractPath);
                 await _FileSystem.DeleteFile(path);
-                
+
                 deleted = true;
 
                 _Logger.LogMessage(

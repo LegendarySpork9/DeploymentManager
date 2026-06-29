@@ -1,10 +1,10 @@
 ﻿// Copyright © - Unpublished - Toby Hunter
-using DeploymentManager.Models.Related;
+using DeploymentManager.Models.Shared;
 
 namespace DeploymentManager.Abstractions
 {
     /// <summary>
-    /// Interface for IIS.
+    /// Interface for the IIS operations.
     /// </summary>
     public interface IIISClient
     {

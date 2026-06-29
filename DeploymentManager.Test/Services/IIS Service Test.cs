@@ -1,6 +1,6 @@
 // Copyright © - Unpublished - Toby Hunter
 using DeploymentManager.Abstractions;
-using DeploymentManager.Models.Related;
+using DeploymentManager.Models.Shared;
 using DeploymentManager.Services;
 using Moq;
 
@@ -28,13 +28,18 @@ namespace DeploymentManager.Test.Services
                 _MockLogger.Object,
                 _MockIISClient.Object);
 
-            (bool actual, string? errorMessage) = await iisService.StopSite("Test Site", "TestDevice");
+            (bool actual, string? errorMessage) = await iisService.StopSite(
+                "Test Site",
+                "TestDevice");
 
             Assert.IsTrue(actual);
             Assert.IsNull(errorMessage);
 
             _MockIISClient.Verify(
-                iis => iis.StopSite("Test Site", "TestDevice", null),
+                iis => iis.StopSite(
+                    "Test Site",
+                    "TestDevice",
+                    null),
                 Times.Once);
         }
 
@@ -54,10 +59,14 @@ namespace DeploymentManager.Test.Services
                 _MockLogger.Object,
                 _MockIISClient.Object);
 
-            (bool actual, string? errorMessage) = await iisService.StopSite("Test Site", "TestDevice");
+            (bool actual, string? errorMessage) = await iisService.StopSite(
+                "Test Site",
+                "TestDevice");
 
             Assert.IsTrue(actual);
-            Assert.AreEqual("IIS site 'Test Site' was already stopped", errorMessage);
+            Assert.AreEqual(
+                "IIS site 'Test Site' was already stopped",
+                errorMessage);
         }
 
         /// <summary>
@@ -76,10 +85,14 @@ namespace DeploymentManager.Test.Services
                 _MockLogger.Object,
                 _MockIISClient.Object);
 
-            (bool actual, string? errorMessage) = await iisService.StopSite("Test Site", "TestDevice");
+            (bool actual, string? errorMessage) = await iisService.StopSite(
+                "Test Site",
+                "TestDevice");
 
             Assert.IsFalse(actual);
-            Assert.AreEqual("Site not found", errorMessage);
+            Assert.AreEqual(
+                "Site not found",
+                errorMessage);
         }
 
         /// <summary>
@@ -97,13 +110,18 @@ namespace DeploymentManager.Test.Services
                 _MockLogger.Object,
                 _MockIISClient.Object);
 
-            (bool actual, string? errorMessage) = await iisService.StartSite("Test Site", "TestDevice");
+            (bool actual, string? errorMessage) = await iisService.StartSite(
+                "Test Site",
+                "TestDevice");
 
             Assert.IsTrue(actual);
             Assert.IsNull(errorMessage);
 
             _MockIISClient.Verify(
-                iis => iis.StartSite("Test Site", "TestDevice", null),
+                iis => iis.StartSite(
+                    "Test Site",
+                    "TestDevice",
+                    null),
                 Times.Once);
         }
 
@@ -123,10 +141,14 @@ namespace DeploymentManager.Test.Services
                 _MockLogger.Object,
                 _MockIISClient.Object);
 
-            (bool actual, string? errorMessage) = await iisService.StartSite("Test Site", "TestDevice");
+            (bool actual, string? errorMessage) = await iisService.StartSite(
+                "Test Site",
+                "TestDevice");
 
             Assert.IsFalse(actual);
-            Assert.AreEqual("Site not found", errorMessage);
+            Assert.AreEqual(
+                "Site not found",
+                errorMessage);
         }
     }
 }

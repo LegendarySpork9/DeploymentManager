@@ -3,10 +3,7 @@ using DeploymentManager.Abstractions;
 using DeploymentManager.Entities;
 using DeploymentManager.Models;
 using DeploymentManager.Models.Data;
-using DeploymentManager.Models.Data.Related;
-using DeploymentManager.Models.Related;
 using DeploymentManager.Models.Responses.Related;
-using DeploymentManager.Models.Shared;
 using DeploymentManager.Services;
 using Moq;
 

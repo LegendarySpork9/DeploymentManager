@@ -63,7 +63,9 @@ namespace DeploymentManager.Test.Services
                 "Test Device");
 
             Assert.IsTrue(actual);
-            Assert.AreEqual("Task 'Test Task' was already stopped", errorMessage);
+            Assert.AreEqual(
+                "Task 'Test Task' was already stopped",
+                errorMessage);
         }
 
         /// <summary>
@@ -87,7 +89,9 @@ namespace DeploymentManager.Test.Services
                 "Test Device");
 
             Assert.IsFalse(actual);
-            Assert.AreEqual("Task not found", errorMessage);
+            Assert.AreEqual(
+                "Task not found",
+                errorMessage);
         }
 
         /// <summary>
@@ -141,7 +145,9 @@ namespace DeploymentManager.Test.Services
                 "Test Device");
 
             Assert.IsFalse(actual);
-            Assert.AreEqual("Task not found", errorMessage);
+            Assert.AreEqual(
+                "Task not found",
+                errorMessage);
         }
     }
 }

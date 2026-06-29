@@ -1,6 +1,6 @@
 ﻿// Copyright © - Unpublished - Toby Hunter
 using DeploymentManager.Abstractions;
-using DeploymentManager.Models.Related;
+using DeploymentManager.Models.Shared;
 using Microsoft.Win32.TaskScheduler;
 using Task = Microsoft.Win32.TaskScheduler.Task;
 
@@ -28,6 +28,15 @@ namespace DeploymentManager.Implementations
                 if (task.State == TaskState.Running)
                 {
                     task.Stop();
+
+                    int waited = 0;
+
+                    while (task.State == TaskState.Running && waited < 30000)
+                    {
+                        Thread.Sleep(500);
+                        waited += 500;
+                        task = taskService.GetTask(taskName);
+                    }
                 }
 
                 task.Definition.Settings.Enabled = false;

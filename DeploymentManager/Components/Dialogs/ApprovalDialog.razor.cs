@@ -34,7 +34,7 @@ namespace DeploymentManager.Components.Dialogs
         {
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
-                "Showing approval dialog");
+                "Showing Approval Dialog");
 
             IsVisible = true;
             ErrorMessage = string.Empty;
@@ -70,7 +70,7 @@ namespace DeploymentManager.Components.Dialogs
                 {
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Info,
-                        "Deployment approved");
+                        "Deployment Approved");
 
                     IsVisible = false;
                     await OnApproved.InvokeAsync();
@@ -106,7 +106,7 @@ namespace DeploymentManager.Components.Dialogs
         {
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
-                "Approval cancelled");
+                "Approval Cancelled");
 
             IsVisible = false;
             await OnCancelled.InvokeAsync();

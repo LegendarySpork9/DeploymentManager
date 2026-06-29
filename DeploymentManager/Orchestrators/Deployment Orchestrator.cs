@@ -106,7 +106,7 @@ namespace DeploymentManager.Orchestrators
 
             List<StageModel> stages = [];
 
-            if (artefactType  == ArtefactType.Upload)
+            if (artefactType == ArtefactType.Upload)
             {
                 stages =
                 [
@@ -317,6 +317,22 @@ namespace DeploymentManager.Orchestrators
             await _DeploymentHistoryService.WriteDeploymentHistory(
                 deploymentConfiguration.Project.Name,
                 deployment);
+
+            if (deployment.Status == Status.Completed ||
+                deployment.Status == Status.CompletedWithWarnings)
+            {
+                await _DeploymentHistoryService.WriteDeploymentStatus(new DeploymentStatusModel
+                {
+                    Project = deploymentConfiguration.Project.Name,
+                    Environment = deploymentConfiguration.Environment,
+                    DeploymentId = deployment.Id,
+                    ArtefactName = deployment.ArtefactName,
+                    ArtefactType = deployment.ArtefactType,
+                    BranchName = deployment.BranchName,
+                    DeployedAt = deployment.EndDate,
+                    Status = deployment.Status
+                });
+            }
 
             return deployment;
         }

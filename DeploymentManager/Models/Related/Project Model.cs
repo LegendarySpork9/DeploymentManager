@@ -14,6 +14,6 @@ namespace DeploymentManager.Models.Related
         public required string Directory { get; set; }
         public required GitHubModel GitHub { get; set; }
         public List<AdditionalDeployModel>? AdditionalDeploy { get; set; }
-        public List<IgnoreModel>? Ignore { get; set; } 
+        public List<IgnoreModel>? Ignore { get; set; }
     }
 }

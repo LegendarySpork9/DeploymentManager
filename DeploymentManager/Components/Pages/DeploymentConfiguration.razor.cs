@@ -45,17 +45,19 @@ namespace DeploymentManager.Components.Pages
         private int FormKey;
 
         private string ErrorMessage = string.Empty;
-        private StageModel? SelectedStage;
-        private StageModel? WarningStage;
 
         private string UploadButtonText = "Upload File";
         private ProjectModel? Project = null;
         private DeploymentEnvironment? DeployEnvironment = null;
         private EnvironmentModel? Environment = null;
         private DeploymentType? DeploymentType = null;
-        private List<ArtefactModel> Artefacts = [];
+        private List<object> Artefacts = [];
+        private List<string> ArtefactSelect = [];
         private object? Artefact = null;
+        private string SelectedArtefact = string.Empty;
         private DeploymentSettingsModel DeploymentSettings = new();
+        private StageModel? SelectedStage;
+        private StageModel? WarningStage;
 
         /// <summary>
         /// Logs opened page message.
@@ -142,11 +144,35 @@ namespace DeploymentManager.Components.Pages
             {
                 DeploymentType = Entities.DeploymentType.GitHub;
 
-                ArtefactListModel? artefactList = await _GitHubService.GetArtefacts(Project.GitHub.Repository);
-
-                if (artefactList != null)
+                if (Environment != null && Environment.ArtefactSource == ArtefactSource.Actions)
                 {
-                    Artefacts = artefactList.Artifacts.FindAll(a => a.Name.Contains(Project.GitHub.Artefact));
+                    ArtefactListModel? artefactList = await _GitHubService.GetArtefacts(Project.GitHub.Repository);
+
+                    if (artefactList != null)
+                    {
+                        List<ArtefactModel> artefacts = artefactList.Artifacts.FindAll(a => a.Name.Contains(Project.GitHub.Artefact) && a.Archive_Download_Url.Contains("/zip"));
+
+                        Artefacts = [.. artefacts];
+                        ArtefactSelect = [.. artefacts.Select(a => a.Name)];
+                    }
+                }
+
+                else if (Environment != null && Environment.ArtefactSource == ArtefactSource.Releases)
+                {
+                    List<ReleaseModel>? releases = await _GitHubService.GetReleases(Project.GitHub.Repository);
+
+                    if (releases != null)
+                    {
+                        List<AssetModel> artefacts = [];
+
+                        foreach (ReleaseModel release in releases)
+                        {
+                            artefacts.AddRange(release.Assets.FindAll(a => a.Name.Contains(Project.GitHub.Artefact) && a.Name.Contains(".zip")));
+                        }
+
+                        Artefacts = [.. artefacts];
+                        ArtefactSelect = [.. artefacts.Select(a => a.Name)];
+                    }
                 }
             }
 
@@ -167,7 +193,24 @@ namespace DeploymentManager.Components.Pages
                 StandardValues.LoggerValues.Debug,
                 $"Selected Artefact: {artefact}");
 
-            Artefact = Artefacts.First(a => a.Name == artefact);
+            SelectedArtefact = artefact;
+
+            if (DeploymentType == Entities.DeploymentType.GitHub)
+            {
+                if (Environment != null && Environment.ArtefactSource == ArtefactSource.Actions)
+                {
+                    List<ArtefactModel> artefacts = [.. Artefacts.Cast<ArtefactModel>()];
+
+                    Artefact = artefacts.First(a => a.Name == artefact);
+                }
+
+                else if (Environment != null && Environment.ArtefactSource == ArtefactSource.Releases)
+                {
+                    List<AssetModel> artefacts = [.. Artefacts.Cast<AssetModel>()];
+
+                    Artefact = artefacts.First(a => a.Name == artefact);
+                }
+            }
 
             IsReadyForDeployment = true;
         }
@@ -189,10 +232,6 @@ namespace DeploymentManager.Components.Pages
         /// </summary>
         private async Task HandleFileUploaded(UploadFileModel uploadFile)
         {
-            _Logger.LogMessage(
-                StandardValues.LoggerValues.Debug,
-                $"File Uploaded: {uploadFile.Name}");
-
             Artefact = uploadFile;
             UploadButtonText = $"Uploaded file \"{uploadFile.Name}\"";
             FileUploaded = true;
@@ -204,6 +243,12 @@ namespace DeploymentManager.Components.Pages
         /// </summary>
         private async Task StartDeployment()
         {
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                $"Run Additional Deploys: {DeploymentSettings.RunAdditionalDeploys}");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                $"Restart Services: {DeploymentSettings.RestartService}");
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
                 "Deploy Clicked");
@@ -274,6 +319,7 @@ namespace DeploymentManager.Components.Pages
             DeploymentType = null;
             Artefacts = [];
             Artefact = null;
+            SelectedArtefact = string.Empty;
             DeploymentSettings = new();
             Deployment = null;
             DeploymentConfig = null;

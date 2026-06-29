@@ -1,10 +1,10 @@
 ﻿// Copyright © - Unpublished - Toby Hunter
-using DeploymentManager.Models.Related;
+using DeploymentManager.Models.Shared;
 
 namespace DeploymentManager.Abstractions
 {
     /// <summary>
-    /// Interface for Task Scheduler.
+    /// Interface for Task Scheduler operations.
     /// </summary>
     public interface ITaskScheduler
     {

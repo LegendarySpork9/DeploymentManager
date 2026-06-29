@@ -1,7 +1,5 @@
 // Copyright © - Unpublished - Toby Hunter
 using DeploymentManager.Abstractions;
-using DeploymentManager.Entities;
-using DeploymentManager.Models.Related;
 using DeploymentManager.Models.Responses;
 using DeploymentManager.Models.Responses.Related;
 using DeploymentManager.Services;
@@ -14,20 +12,6 @@ namespace DeploymentManager.Test.Services
     {
         private readonly Mock<ILoggerService> _MockLogger = new();
         private readonly Mock<IGitHubClient> _MockGitHubClient = new();
-
-        private readonly ProjectModel Project = new()
-        {
-            Type = ProjectType.Website,
-            Name = "TestProject",
-            Directory = @"C:\Deploy",
-            GitHub = new()
-            {
-                Repository = "test-repo",
-                Artefact = "test-artefact"
-            },
-            AdditionalDeploy = null,
-            Ignore = null
-        };
 
         /// <summary>
         /// Tests whether the GetArtefacts method returns the artefact list when the client returns data.

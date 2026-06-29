@@ -1,9 +1,9 @@
 // Copyright © - Unpublished - Toby Hunter
+using DeploymentManager.Abstractions;
+using DeploymentManager.Models.Shared;
+using Microsoft.Web.Administration;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
-using DeploymentManager.Abstractions;
-using DeploymentManager.Models.Related;
-using Microsoft.Web.Administration;
 
 namespace DeploymentManager.Implementations
 {
@@ -56,6 +56,14 @@ namespace DeploymentManager.Implementations
                     {
                         appPool.Stop();
                     }
+
+                    int waited = 0;
+
+                    while (appPool.WorkerProcesses.Count > 0 && waited < 30000)
+                    {
+                        Thread.Sleep(500);
+                        waited += 500;
+                    }
                 }
             });
 
@@ -96,7 +104,7 @@ namespace DeploymentManager.Implementations
         }
 
         /// <summary>
-        /// Impersonates a user on another machines with the given details.
+        /// Impersonates a user on another machine with the given details.
         /// </summary>
         private void RunWithOptionalImpersonation(
             DeviceAuthModel? auth,

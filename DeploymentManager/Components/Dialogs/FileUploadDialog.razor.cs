@@ -39,7 +39,7 @@ namespace DeploymentManager.Components.Dialogs
         {
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
-                "Showing file upload dialog");
+                "Showing File Upload Dialog");
 
             IsVisible = true;
             ErrorMessage = string.Empty;
@@ -78,6 +78,12 @@ namespace DeploymentManager.Components.Dialogs
 
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
+                $"Branch Id {BranchId}");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                $"Branch Name: {BranchName}");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
                 "Upload Clicked");
 
             IsUploading = true;
@@ -102,10 +108,10 @@ namespace DeploymentManager.Components.Dialogs
                         filePath,
                         browserStream);
                 }
-                
+
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
-                    $"File uploaded: {SelectedFile.Name} ({SelectedFile.Size} bytes)");
+                    $"File Uploaded: {SelectedFile.Name} ({SelectedFile.Size} bytes)");
 
                 UploadFileModel uploadFile = new()
                 {
@@ -142,12 +148,15 @@ namespace DeploymentManager.Components.Dialogs
         {
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
-                "File upload cancelled");
+                "File Upload Cancelled");
 
             IsVisible = false;
             await OnCancelled.InvokeAsync();
         }
 
+        /// <summary>
+        /// Adds the size characters to the file size for ease of reading.
+        /// </summary>
         private static string FormatFileSize(long bytes)
         {
             string[] sizes =

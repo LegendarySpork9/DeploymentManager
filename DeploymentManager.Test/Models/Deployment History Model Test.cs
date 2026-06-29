@@ -1,10 +1,7 @@
 // Copyright © - Unpublished - Toby Hunter
 using DeploymentManager.Entities;
 using DeploymentManager.Models.Data;
-using DeploymentManager.Models.Data.Related;
-using DeploymentManager.Models.Related;
 using DeploymentManager.Models.Responses.Related;
-using DeploymentManager.Models.Shared;
 
 namespace DeploymentManager.Test.Models
 {
@@ -13,7 +10,10 @@ namespace DeploymentManager.Test.Models
     {
         private static readonly DateTime DefaultDate = new(1900, 01, 01, 0, 0, 0, DateTimeKind.Utc);
 
-        private static DeploymentHistoryModel<object> CreateObjectHistory(object artefact, ArtefactType artefactType, DeploymentType deploymentType)
+        private static DeploymentHistoryModel<object> CreateObjectHistory(
+            object artefact,
+            ArtefactType artefactType,
+            DeploymentType deploymentType)
         {
             return new()
             {
@@ -53,7 +53,14 @@ namespace DeploymentManager.Test.Models
                 },
                 Stages =
                 [
-                    new() { Name = DeploymentStage.FetchArtefacts, Status = Status.Completed, StartDate = DefaultDate, EndDate = DefaultDate, RunTime = TimeSpan.Zero }
+                    new()
+                    {
+                        Name = DeploymentStage.FetchArtefacts,
+                        Status = Status.Completed,
+                        StartDate = DefaultDate,
+                        EndDate = DefaultDate,
+                        RunTime = TimeSpan.Zero
+                    }
                 ]
             };
         }
@@ -70,21 +77,45 @@ namespace DeploymentManager.Test.Models
                 Name = "test-artefact",
                 Size_in_Bytes = 1048576,
                 Archive_Download_Url = "https://example.com/artifact.zip",
-                Workflow_Run = new() { Id = 456, Head_Branch = "main", Head_Sha = "abc123" }
+                Workflow_Run = new()
+                {
+                    Id = 456,
+                    Head_Branch = "main",
+                    Head_Sha = "abc123"
+                }
             };
 
-            DeploymentHistoryModel<object> history = CreateObjectHistory(artefact, ArtefactType.Artefact, DeploymentType.GitHub);
+            DeploymentHistoryModel<object> history = CreateObjectHistory(
+                artefact,
+                ArtefactType.Artefact,
+                DeploymentType.GitHub);
 
             DeploymentHistoryModel<ArtefactModel> result = history.ToArtefactDeployment();
 
-            Assert.AreEqual(1, result.Id);
-            Assert.AreEqual(DeploymentType.GitHub, result.Type);
-            Assert.AreEqual(ArtefactType.Artefact, result.ArtefactType);
-            Assert.AreEqual(Status.Completed, result.Status);
-            Assert.AreEqual(123, result.DeploymentConfiguration.Artefact.Id);
-            Assert.AreEqual("test-artefact", result.DeploymentConfiguration.Artefact.Name);
-            Assert.AreEqual("abc123", result.BranchId);
-            Assert.HasCount(1, result.Stages);
+            Assert.AreEqual(
+                1,
+                result.Id);
+            Assert.AreEqual(
+                DeploymentType.GitHub,
+                result.Type);
+            Assert.AreEqual(
+                ArtefactType.Artefact,
+                result.ArtefactType);
+            Assert.AreEqual(
+                Status.Completed,
+                result.Status);
+            Assert.AreEqual(
+                123,
+                result.DeploymentConfiguration.Artefact.Id);
+            Assert.AreEqual(
+                "test-artefact",
+                result.DeploymentConfiguration.Artefact.Name);
+            Assert.AreEqual(
+                "abc123",
+                result.BranchId);
+            Assert.HasCount(
+                1,
+                result.Stages);
         }
 
         /// <summary>
@@ -102,16 +133,31 @@ namespace DeploymentManager.Test.Models
                 Browser_Download_Url = "https://example.com/release.zip"
             };
 
-            DeploymentHistoryModel<object> history = CreateObjectHistory(asset, ArtefactType.ReleaseAsset, DeploymentType.GitHub);
+            DeploymentHistoryModel<object> history = CreateObjectHistory(
+                asset,
+                ArtefactType.ReleaseAsset,
+                DeploymentType.GitHub);
 
             DeploymentHistoryModel<AssetModel> result = history.ToAssetDeployment();
 
-            Assert.AreEqual(1, result.Id);
-            Assert.AreEqual(ArtefactType.ReleaseAsset, result.ArtefactType);
-            Assert.AreEqual(101, result.DeploymentConfiguration.Artefact.Id);
-            Assert.AreEqual("release.zip", result.DeploymentConfiguration.Artefact.Name);
-            Assert.AreEqual(2097152, result.DeploymentConfiguration.Artefact.Size);
-            Assert.HasCount(1, result.Stages);
+            Assert.AreEqual(
+                1,
+                result.Id);
+            Assert.AreEqual(
+                ArtefactType.ReleaseAsset,
+                result.ArtefactType);
+            Assert.AreEqual(
+                101,
+                result.DeploymentConfiguration.Artefact.Id);
+            Assert.AreEqual(
+                "release.zip",
+                result.DeploymentConfiguration.Artefact.Name);
+            Assert.AreEqual(
+                2097152,
+                result.DeploymentConfiguration.Artefact.Size);
+            Assert.HasCount(
+                1,
+                result.Stages);
         }
 
         /// <summary>
@@ -130,16 +176,31 @@ namespace DeploymentManager.Test.Models
                 Directory = @"C:\Uploads"
             };
 
-            DeploymentHistoryModel<object> history = CreateObjectHistory(upload, ArtefactType.Upload, DeploymentType.FileUpload);
+            DeploymentHistoryModel<object> history = CreateObjectHistory(
+                upload,
+                ArtefactType.Upload,
+                DeploymentType.FileUpload);
 
             DeploymentHistoryModel<UploadFileModel> result = history.ToUploadDeployment();
 
-            Assert.AreEqual(1, result.Id);
-            Assert.AreEqual(ArtefactType.Upload, result.ArtefactType);
-            Assert.AreEqual(1, result.DeploymentConfiguration.Artefact.Id);
-            Assert.AreEqual("test-upload", result.DeploymentConfiguration.Artefact.Name);
-            Assert.AreEqual(@"C:\Uploads", result.DeploymentConfiguration.Artefact.Directory);
-            Assert.HasCount(1, result.Stages);
+            Assert.AreEqual(
+                1,
+                result.Id);
+            Assert.AreEqual(
+                ArtefactType.Upload,
+                result.ArtefactType);
+            Assert.AreEqual(
+                1,
+                result.DeploymentConfiguration.Artefact.Id);
+            Assert.AreEqual(
+                "test-upload",
+                result.DeploymentConfiguration.Artefact.Name);
+            Assert.AreEqual(
+                @"C:\Uploads",
+                result.DeploymentConfiguration.Artefact.Directory);
+            Assert.HasCount(
+                1,
+                result.Stages);
         }
 
         /// <summary>
@@ -154,7 +215,12 @@ namespace DeploymentManager.Test.Models
                 Name = "test-artefact",
                 Size_in_Bytes = 1048576,
                 Archive_Download_Url = "https://example.com/artifact.zip",
-                Workflow_Run = new() { Id = 456, Head_Branch = "main", Head_Sha = "abc123" }
+                Workflow_Run = new()
+                {
+                    Id = 456,
+                    Head_Branch = "main",
+                    Head_Sha = "abc123"
+                }
             };
 
             DeploymentHistoryModel<ArtefactModel> history = new()
@@ -180,7 +246,11 @@ namespace DeploymentManager.Test.Models
                         Type = ProjectType.Website,
                         Name = "TestProject",
                         Directory = @"inetpub\wwwroot\TestProject",
-                        GitHub = new() { Repository = "test-repo", Artefact = "test-artefact" }
+                        GitHub = new()
+                        {
+                            Repository = "test-repo",
+                            Artefact = "test-artefact"
+                        }
                     },
                     Artefact = artefact,
                     PrimaryDeploymentTarget = new()
@@ -195,18 +265,35 @@ namespace DeploymentManager.Test.Models
                 },
                 Stages =
                 [
-                    new() { Name = DeploymentStage.FetchArtefacts, Status = Status.Completed, StartDate = DefaultDate, EndDate = DefaultDate, RunTime = TimeSpan.Zero }
+                    new()
+                    {
+                        Name = DeploymentStage.FetchArtefacts,
+                        Status = Status.Completed,
+                        StartDate = DefaultDate,
+                        EndDate = DefaultDate,
+                        RunTime = TimeSpan.Zero
+                    }
                 ]
             };
 
             DeploymentHistoryModel<object> result = history.ToObjectDeployment();
 
-            Assert.AreEqual(1, result.Id);
-            Assert.AreEqual(DeploymentType.GitHub, result.Type);
-            Assert.AreEqual(Status.Completed, result.Status);
+            Assert.AreEqual(
+                1,
+                result.Id);
+            Assert.AreEqual(
+                DeploymentType.GitHub,
+                result.Type);
+            Assert.AreEqual(
+                Status.Completed,
+                result.Status);
             Assert.IsInstanceOfType<ArtefactModel>(result.DeploymentConfiguration.Artefact);
-            Assert.AreEqual("TestProject", result.DeploymentConfiguration.Project.Name);
-            Assert.HasCount(1, result.Stages);
+            Assert.AreEqual(
+                "TestProject",
+                result.DeploymentConfiguration.Project.Name);
+            Assert.HasCount(
+                1,
+                result.Stages);
         }
     }
 }

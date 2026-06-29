@@ -18,7 +18,6 @@ namespace DeploymentManager.Components.Pages
         private readonly CodeFormModel VerificationForm = new();
 
         private bool? IsAlreadySetup = null;
-
         private bool IsLoading;
         private bool IsReconfiguring;
         private bool IsVerified;
@@ -34,8 +33,8 @@ namespace DeploymentManager.Components.Pages
         protected override async Task OnInitializedAsync()
         {
             _Logger.LogMessage(
-                    StandardValues.LoggerValues.Info,
-                    "Opened Authenticator Setup Page");
+                StandardValues.LoggerValues.Info,
+                "Opened Authenticator Setup Page");
 
             IsLoading = true;
             IsAlreadySetup = await ApprovalService.IsSetupComplete();

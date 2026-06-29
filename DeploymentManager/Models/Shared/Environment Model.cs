@@ -12,5 +12,6 @@ namespace DeploymentManager.Models.Shared
         public required string Drive { get; set; }
         public required DeploymentEnvironment Name { get; set; }
         public required ArtefactSource ArtefactSource { get; set; }
+        public DeviceAuthModel? Auth { get; set; }
     }
 }

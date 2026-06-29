@@ -1,4 +1,5 @@
 // Copyright © - Unpublished - Toby Hunter
+using System.IO;
 using DeploymentManager.Abstractions;
 using DeploymentManager.Models;
 using DeploymentManager.Services;
@@ -331,7 +332,7 @@ namespace DeploymentManager.Test.Services
 
             _MockFileSystem.Verify(
                 fs => fs.WriteAllText(
-                    $@"{AppSettings.ApprovalCredentialLocation}\credential.json",
+                    Path.Combine(AppSettings.ApprovalCredentialLocation, "credential.json"),
                     It.IsAny<string>()),
                 Times.Once);
         }

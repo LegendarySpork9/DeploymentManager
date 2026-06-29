@@ -2,8 +2,6 @@
 using DeploymentManager.Abstractions;
 using DeploymentManager.Entities;
 using DeploymentManager.Models.Data;
-using DeploymentManager.Models.Data.Related;
-using DeploymentManager.Models.Related;
 using DeploymentManager.Models.Shared;
 using DeploymentManager.Orchestrators;
 using DeploymentManager.Services;
@@ -25,13 +23,22 @@ namespace DeploymentManager.Test.Orchestrators
 
         private DeployUploadOrchestrator CreateOrchestrator()
         {
-            _MockClock.Setup(c => c.UtcNow).Returns(TestDate);
-            _MockClock.Setup(c => c.DefaultDate).Returns(DefaultDate);
-            _MockClock.Setup(c => c.DefaultTimeSpan).Returns(TimeSpan.Zero);
+            _MockClock.Setup(c => c.UtcNow)
+                .Returns(TestDate);
+            _MockClock.Setup(c => c.DefaultDate)
+                .Returns(DefaultDate);
+            _MockClock.Setup(c => c.DefaultTimeSpan)
+                .Returns(TimeSpan.Zero);
 
-            DocumentService documentService = new(_MockLogger.Object, _MockFileSystem.Object);
-            IISService iisService = new(_MockLogger.Object, _MockIISClient.Object);
-            TaskSchedulerService taskSchedulerService = new(_MockLogger.Object, _MockTaskScheduler.Object);
+            DocumentService documentService = new(
+                _MockLogger.Object,
+                _MockFileSystem.Object);
+            IISService iisService = new(
+                _MockLogger.Object,
+                _MockIISClient.Object);
+            TaskSchedulerService taskSchedulerService = new(
+                _MockLogger.Object,
+                _MockTaskScheduler.Object);
 
             return new DeployUploadOrchestrator(
                 _MockLogger.Object,
@@ -52,7 +59,11 @@ namespace DeploymentManager.Test.Orchestrators
                     Type = ProjectType.Website,
                     Name = "TestProject",
                     Directory = @"inetpub\wwwroot\TestProject",
-                    GitHub = new() { Repository = "test-repo", Artefact = "test-artefact" }
+                    GitHub = new()
+                    {
+                        Repository = "test-repo",
+                        Artefact = "test-artefact"
+                    }
                 },
                 Artefact = new()
                 {
@@ -75,8 +86,7 @@ namespace DeploymentManager.Test.Orchestrators
             };
         }
 
-        private static DeploymentHistoryModel<UploadFileModel> CreateDeploymentHistory(
-            DeploymentConfigurationModel<UploadFileModel> config)
+        private static DeploymentHistoryModel<UploadFileModel> CreateDeploymentHistory(DeploymentConfigurationModel<UploadFileModel> config)
         {
             DateTime defaultDate = new(1900, 01, 01, 0, 0, 0, DateTimeKind.Utc);
 
@@ -118,23 +128,49 @@ namespace DeploymentManager.Test.Orchestrators
             DeploymentHistoryModel<UploadFileModel> deployment = CreateDeploymentHistory(config);
 
             FileStream fileStream = new(
-                Path.GetTempFileName(), FileMode.Open, FileAccess.Read,
-                FileShare.None, 4096, FileOptions.DeleteOnClose);
+                Path.GetTempFileName(),
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.None,
+                4096,
+                FileOptions.DeleteOnClose);
 
-            _MockFileSystem.Setup(fs => fs.ReadStream(It.IsAny<string>())).ReturnsAsync(fileStream);
-            _MockFileSystem.Setup(fs => fs.ExtractArchive(It.IsAny<string>(), It.IsAny<FileStream>())).Returns(Task.CompletedTask);
-            _MockFileSystem.Setup(fs => fs.GetFiles(It.IsAny<string>())).ReturnsAsync([@"C:\Deploy\test-upload\file1.dll"]);
-            _MockIISClient.Setup(iis => iis.StopSite(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DeviceAuthModel?>())).Returns((string?)null);
-            _MockFileSystem.Setup(fs => fs.CheckDirectory(It.IsAny<string>())).ReturnsAsync(true);
-            _MockFileSystem.Setup(fs => fs.CopyFile(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.CompletedTask);
-            _MockIISClient.Setup(iis => iis.StartSite(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DeviceAuthModel?>()));
-            _MockFileSystem.Setup(fs => fs.DeleteDirectory(It.IsAny<string>())).Returns(Task.CompletedTask);
-            _MockFileSystem.Setup(fs => fs.DeleteFile(It.IsAny<string>())).Returns(Task.CompletedTask);
+            _MockFileSystem.Setup(fs => fs.ReadStream(It.IsAny<string>()))
+                .ReturnsAsync(fileStream);
+            _MockFileSystem.Setup(fs => fs.ExtractArchive(
+                    It.IsAny<string>(),
+                    It.IsAny<FileStream>()))
+                .Returns(Task.CompletedTask);
+            _MockFileSystem.Setup(fs => fs.GetFiles(It.IsAny<string>()))
+                .ReturnsAsync([@"C:\Deploy\test-upload\file1.dll"]);
+            _MockIISClient.Setup(iis => iis.StopSite(
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<DeviceAuthModel?>()))
+                .Returns((string?)null);
+            _MockFileSystem.Setup(fs => fs.CheckDirectory(It.IsAny<string>()))
+                .ReturnsAsync(true);
+            _MockFileSystem.Setup(fs => fs.CopyFile(
+                    It.IsAny<string>(),
+                    It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
+            _MockIISClient.Setup(iis => iis.StartSite(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<DeviceAuthModel?>()));
+            _MockFileSystem.Setup(fs => fs.DeleteDirectory(It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
+            _MockFileSystem.Setup(fs => fs.DeleteFile(It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
 
             DeploymentHistoryModel<UploadFileModel> result = await orchestrator.Run(
-                deployment, @"C:\Deploy", config);
+                deployment,
+                @"C:\Deploy",
+                config);
 
-            Assert.AreEqual(Status.Completed, result.Status);
+            Assert.AreEqual(
+                Status.Completed,
+                result.Status);
             Assert.IsNull(result.FailedAtStage);
             Assert.IsTrue(result.Stages.All(s => s.Status == Status.Completed));
         }
@@ -153,11 +189,19 @@ namespace DeploymentManager.Test.Orchestrators
                 .ThrowsAsync(new FileNotFoundException("File not found"));
 
             DeploymentHistoryModel<UploadFileModel> result = await orchestrator.Run(
-                deployment, @"C:\Deploy", config);
+                deployment,
+                @"C:\Deploy",
+                config);
 
-            Assert.AreEqual(Status.Failed, result.Status);
-            Assert.AreEqual(DeploymentStage.ExtractArtefacts, result.FailedAtStage);
-            Assert.AreEqual(Status.Failed, result.Stages[0].Status);
+            Assert.AreEqual(
+                Status.Failed,
+                result.Status);
+            Assert.AreEqual(
+                DeploymentStage.ExtractArtefacts,
+                result.FailedAtStage);
+            Assert.AreEqual(
+                Status.Failed,
+                result.Stages[0].Status);
             Assert.IsNotNull(result.Stages[0].FailMessages);
         }
 
@@ -169,27 +213,55 @@ namespace DeploymentManager.Test.Orchestrators
         {
             DeployUploadOrchestrator orchestrator = CreateOrchestrator();
             DeploymentConfigurationModel<UploadFileModel> config = CreateConfig();
-            config.DeploymentSettings = new() { RestartService = false };
+            config.DeploymentSettings = new()
+            {
+                RestartService = false
+            };
             DeploymentHistoryModel<UploadFileModel> deployment = CreateDeploymentHistory(config);
 
             FileStream fileStream = new(
-                Path.GetTempFileName(), FileMode.Open, FileAccess.Read,
-                FileShare.None, 4096, FileOptions.DeleteOnClose);
+                Path.GetTempFileName(),
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.None,
+                4096,
+                FileOptions.DeleteOnClose);
 
-            _MockFileSystem.Setup(fs => fs.ReadStream(It.IsAny<string>())).ReturnsAsync(fileStream);
-            _MockFileSystem.Setup(fs => fs.ExtractArchive(It.IsAny<string>(), It.IsAny<FileStream>())).Returns(Task.CompletedTask);
-            _MockFileSystem.Setup(fs => fs.GetFiles(It.IsAny<string>())).ReturnsAsync([@"C:\Deploy\test-upload\file1.dll"]);
-            _MockIISClient.Setup(iis => iis.StopSite(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DeviceAuthModel?>())).Returns((string?)null);
-            _MockFileSystem.Setup(fs => fs.CheckDirectory(It.IsAny<string>())).ReturnsAsync(true);
-            _MockFileSystem.Setup(fs => fs.CopyFile(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.CompletedTask);
-            _MockFileSystem.Setup(fs => fs.DeleteDirectory(It.IsAny<string>())).Returns(Task.CompletedTask);
-            _MockFileSystem.Setup(fs => fs.DeleteFile(It.IsAny<string>())).Returns(Task.CompletedTask);
+            _MockFileSystem.Setup(fs => fs.ReadStream(It.IsAny<string>()))
+                .ReturnsAsync(fileStream);
+            _MockFileSystem.Setup(fs => fs.ExtractArchive(
+                    It.IsAny<string>(),
+                    It.IsAny<FileStream>()))
+                .Returns(Task.CompletedTask);
+            _MockFileSystem.Setup(fs => fs.GetFiles(It.IsAny<string>()))
+                .ReturnsAsync([@"C:\Deploy\test-upload\file1.dll"]);
+            _MockIISClient.Setup(iis => iis.StopSite(
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<DeviceAuthModel?>()))
+                .Returns((string?)null);
+            _MockFileSystem.Setup(fs => fs.CheckDirectory(It.IsAny<string>()))
+                .ReturnsAsync(true);
+            _MockFileSystem.Setup(fs => fs.CopyFile(
+                    It.IsAny<string>(),
+                    It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
+            _MockFileSystem.Setup(fs => fs.DeleteDirectory(It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
+            _MockFileSystem.Setup(fs => fs.DeleteFile(It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
 
             DeploymentHistoryModel<UploadFileModel> result = await orchestrator.Run(
-                deployment, @"C:\Deploy", config);
+                deployment,
+                @"C:\Deploy",
+                config);
 
-            Assert.AreEqual(Status.Completed, result.Status);
-            Assert.AreEqual(Status.Skipped, result.Stages[4].Status);
+            Assert.AreEqual(
+                Status.Completed,
+                result.Status);
+            Assert.AreEqual(
+                Status.Skipped,
+                result.Stages[4].Status);
         }
 
         /// <summary>
@@ -203,27 +275,57 @@ namespace DeploymentManager.Test.Orchestrators
             DeploymentHistoryModel<UploadFileModel> deployment = CreateDeploymentHistory(config);
 
             FileStream fileStream = new(
-                Path.GetTempFileName(), FileMode.Open, FileAccess.Read,
-                FileShare.None, 4096, FileOptions.DeleteOnClose);
+                Path.GetTempFileName(),
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.None,
+                4096,
+                FileOptions.DeleteOnClose);
 
-            _MockFileSystem.Setup(fs => fs.ReadStream(It.IsAny<string>())).ReturnsAsync(fileStream);
-            _MockFileSystem.Setup(fs => fs.ExtractArchive(It.IsAny<string>(), It.IsAny<FileStream>())).Returns(Task.CompletedTask);
-            _MockFileSystem.Setup(fs => fs.GetFiles(It.IsAny<string>())).ReturnsAsync([@"C:\Deploy\test-upload\file1.dll"]);
-            _MockIISClient.Setup(iis => iis.StopSite(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DeviceAuthModel?>())).Returns("IIS site 'TestProject' was already stopped");
-            _MockFileSystem.Setup(fs => fs.CheckDirectory(It.IsAny<string>())).ReturnsAsync(true);
-            _MockFileSystem.Setup(fs => fs.CopyFile(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.CompletedTask);
-            _MockIISClient.Setup(iis => iis.StartSite(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DeviceAuthModel?>()));
-            _MockFileSystem.Setup(fs => fs.DeleteDirectory(It.IsAny<string>())).Returns(Task.CompletedTask);
-            _MockFileSystem.Setup(fs => fs.DeleteFile(It.IsAny<string>())).Returns(Task.CompletedTask);
+            _MockFileSystem.Setup(fs => fs.ReadStream(It.IsAny<string>()))
+                .ReturnsAsync(fileStream);
+            _MockFileSystem.Setup(fs => fs.ExtractArchive(
+                    It.IsAny<string>(),
+                    It.IsAny<FileStream>()))
+                .Returns(Task.CompletedTask);
+            _MockFileSystem.Setup(fs => fs.GetFiles(It.IsAny<string>()))
+                .ReturnsAsync([@"C:\Deploy\test-upload\file1.dll"]);
+            _MockIISClient.Setup(iis => iis.StopSite(
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<DeviceAuthModel?>()))
+                .Returns("IIS site 'TestProject' was already stopped");
+            _MockFileSystem.Setup(fs => fs.CheckDirectory(It.IsAny<string>()))
+                .ReturnsAsync(true);
+            _MockFileSystem.Setup(fs => fs.CopyFile(
+                    It.IsAny<string>(),
+                    It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
+            _MockIISClient.Setup(iis => iis.StartSite(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<DeviceAuthModel?>()));
+            _MockFileSystem.Setup(fs => fs.DeleteDirectory(It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
+            _MockFileSystem.Setup(fs => fs.DeleteFile(It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
 
             DeploymentHistoryModel<UploadFileModel> result = await orchestrator.Run(
-                deployment, @"C:\Deploy", config);
+                deployment,
+                @"C:\Deploy",
+                config);
 
-            Assert.AreEqual(Status.CompletedWithWarnings, result.Status);
+            Assert.AreEqual(
+                Status.CompletedWithWarnings,
+                result.Status);
             Assert.IsNull(result.FailedAtStage);
-            Assert.AreEqual(Status.CompletedWithWarnings, result.Stages[2].Status);
+            Assert.AreEqual(
+                Status.CompletedWithWarnings,
+                result.Stages[2].Status);
             Assert.IsNotNull(result.Stages[2].WarningMessages);
-            Assert.HasCount(1, result.Stages[2].WarningMessages);
+            Assert.HasCount(
+                1,
+                result.Stages[2].WarningMessages);
         }
     }
 }

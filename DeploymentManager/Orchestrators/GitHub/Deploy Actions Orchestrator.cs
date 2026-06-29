@@ -109,7 +109,7 @@ namespace DeploymentManager.Orchestrators.GitHub
                 $"Fetch Artefact Stage End Date: {fetch.EndDate:dd/MM/yyyy hh:mm:ss}");
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
-                $"Fetch Artefact Stage Run Time: {fetch.RunTime:d\\.hh\\:mm\\:ss}");
+                $"Fetch Artefact Stage Run Time: {fetch.RunTime:d\\.hh\\:mm\\:ss\\.fff}");
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
                 $"Finished fetch artefact stage for deployment {deployment.Id}");
@@ -164,7 +164,7 @@ namespace DeploymentManager.Orchestrators.GitHub
                     $"Extract Artefact Stage End Date: {extract.EndDate:dd/MM/yyyy hh:mm:ss}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
-                    $"Extract Artefact Stage Run Time: {extract.RunTime:d\\.hh\\:mm\\:ss}");
+                    $"Extract Artefact Stage Run Time: {extract.RunTime:d\\.hh\\:mm\\:ss\\.fff}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
                     $"Finished extract artefact stage for deployment {deployment.Id}");
@@ -208,9 +208,7 @@ namespace DeploymentManager.Orchestrators.GitHub
                     string fileName = Path.GetFileName(file);
                     string? directory = Path.GetDirectoryName(file);
 
-                    if (!ignore.Select(i => i.Name)
-                            .Contains(fileName) && (directory != null && !ignore.Select(i => i.Name)
-                                .Contains(directory)))
+                    if (!ignore.Any(i => fileName.Contains(i.Name)) && (directory != null && !ignore.Any(i => directory.Contains(i.Name))))
                     {
                         string relativePath = Path.GetRelativePath(
                             extractedArtefactFile,
@@ -270,7 +268,7 @@ namespace DeploymentManager.Orchestrators.GitHub
                     $"Fetch Artefact Files Stage End Date: {fetchFiles.EndDate:dd/MM/yyyy hh:mm:ss}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
-                    $"Fetch Artefact Files Stage Run Time: {fetchFiles.RunTime:d\\.hh\\:mm\\:ss}");
+                    $"Fetch Artefact Files Stage Run Time: {fetchFiles.RunTime:d\\.hh\\:mm\\:ss\\.fff}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
                     $"Finished fetch artefact files stage for deployment {deployment.Id}");
@@ -304,7 +302,8 @@ namespace DeploymentManager.Orchestrators.GitHub
 
                     (bool stopped, string? tempErrorMessage) = await _IISService.StopSite(
                         deploymentConfiguration.Project.Name,
-                        device);
+                        device,
+                        deploymentConfiguration.PrimaryDeploymentTarget.Auth);
 
                     if (stopped)
                     {
@@ -363,7 +362,8 @@ namespace DeploymentManager.Orchestrators.GitHub
 
                     (bool stopped, string? tempErrorMessage) = await _TaskSchedulerService.StopTask(
                         deploymentConfiguration.Project.Name,
-                        device);
+                        device,
+                        deploymentConfiguration.PrimaryDeploymentTarget.Auth);
 
                     if (stopped)
                     {
@@ -448,7 +448,7 @@ namespace DeploymentManager.Orchestrators.GitHub
                     $"Stop Services Stage End Date: {stopServices.EndDate:dd/MM/yyyy hh:mm:ss}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
-                    $"Stop Services Stage Run Time: {stopServices.RunTime:d\\.hh\\:mm\\:ss}");
+                    $"Stop Services Stage Run Time: {stopServices.RunTime:d\\.hh\\:mm\\:ss\\.fff}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
                     $"Finished stop services stage for deployment {deployment.Id}");
@@ -531,7 +531,7 @@ namespace DeploymentManager.Orchestrators.GitHub
                     $"Move Artefact Stage End Date: {move.EndDate:dd/MM/yyyy hh:mm:ss}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
-                    $"Move Artefact Stage Run Time: {move.RunTime:d\\.hh\\:mm\\:ss}");
+                    $"Move Artefact Stage Run Time: {move.RunTime:d\\.hh\\:mm\\:ss\\.fff}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
                     $"Finished move artefact stage for deployment {deployment.Id}");
@@ -564,7 +564,8 @@ namespace DeploymentManager.Orchestrators.GitHub
 
                     (bool started, string? tempErrorMessage) = await _IISService.StartSite(
                         deploymentConfiguration.Project.Name,
-                        device);
+                        device,
+                        deploymentConfiguration.PrimaryDeploymentTarget.Auth);
 
                     if (started)
                     {
@@ -613,7 +614,8 @@ namespace DeploymentManager.Orchestrators.GitHub
 
                     (bool started, string? tempErrorMessage) = await _TaskSchedulerService.StartTask(
                         deploymentConfiguration.Project.Name,
-                        device);
+                        device,
+                        deploymentConfiguration.PrimaryDeploymentTarget.Auth);
 
                     if (started)
                     {
@@ -684,7 +686,7 @@ namespace DeploymentManager.Orchestrators.GitHub
                     $"Start Services Stage End Date: {startServices.EndDate:dd/MM/yyyy hh:mm:ss}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
-                    $"Start Services Stage Run Time: {startServices.RunTime:d\\.hh\\:mm\\:ss}");
+                    $"Start Services Stage Run Time: {startServices.RunTime:d\\.hh\\:mm\\:ss\\.fff}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
                     $"Finished start services stage for deployment {deployment.Id}");
@@ -702,60 +704,57 @@ namespace DeploymentManager.Orchestrators.GitHub
                 finishedStages.Add(startServices);
             }
 
-            if (finishedStages.All(fs => fs.Status == Status.Completed || fs.Status == Status.CompletedWithWarnings || fs.Status == Status.Skipped))
-            {
-                _Logger.LogMessage(
+            _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
                     $"Starting clean artefacts stage for deployment {deployment.Id}");
 
-                StageModel cleanArtefacts = deployment.Stages[6];
-                cleanArtefacts.Status = Status.Running;
-                cleanArtefacts.StartDate = _Clock.UtcNow;
+            StageModel cleanArtefacts = deployment.Stages[6];
+            cleanArtefacts.Status = Status.Running;
+            cleanArtefacts.StartDate = _Clock.UtcNow;
 
-                onStageUpdated?.Invoke();
+            onStageUpdated?.Invoke();
 
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
-                    $"Clean Artefacts Stage Start Date: {cleanArtefacts.StartDate:dd/MM/yyyy hh:mm:ss}");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                $"Clean Artefacts Stage Start Date: {cleanArtefacts.StartDate:dd/MM/yyyy hh:mm:ss}");
 
-                (bool deleted, errorMessage) = await _DocumentService.DeleteArtefact(
-                    deploymentConfiguration.Artefact.Name,
-                    downloadedArtefactFile,
-                    extractedArtefactFile);
+            (bool deleted, errorMessage) = await _DocumentService.DeleteArtefact(
+                deploymentConfiguration.Artefact.Name,
+                downloadedArtefactFile,
+                extractedArtefactFile);
 
-                if (deleted)
-                {
-                    cleanArtefacts.Status = Status.Completed;
-                    cleanArtefacts.EndDate = _Clock.UtcNow;
-                    cleanArtefacts.RunTime = cleanArtefacts.EndDate - cleanArtefacts.StartDate;
-                }
-
-                else
-                {
-                    deployment.FailedAtStage = DeploymentStage.CleanArtefacts;
-                    cleanArtefacts.Status = Status.Failed;
-                    cleanArtefacts.EndDate = _Clock.UtcNow;
-                    cleanArtefacts.RunTime = cleanArtefacts.EndDate - cleanArtefacts.StartDate;
-                    cleanArtefacts.FailMessages = [errorMessage ?? "No error message received from Document Service"];
-                }
-
-                onStageUpdated?.Invoke();
-
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
-                    $"Clean Artefacts Stage Status: {cleanArtefacts.Status}");
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
-                    $"Clean Artefacts Stage End Date: {cleanArtefacts.EndDate:dd/MM/yyyy hh:mm:ss}");
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
-                    $"Clean Artefacts Stage Run Time: {cleanArtefacts.RunTime:d\\.hh\\:mm\\:ss}");
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Info,
-                    $"Finished clean artefacts stage for deployment {deployment.Id}");
-
-                finishedStages.Add(cleanArtefacts);
+            if (deleted)
+            {
+                cleanArtefacts.Status = Status.Completed;
+                cleanArtefacts.EndDate = _Clock.UtcNow;
+                cleanArtefacts.RunTime = cleanArtefacts.EndDate - cleanArtefacts.StartDate;
             }
+
+            else
+            {
+                deployment.FailedAtStage = DeploymentStage.CleanArtefacts;
+                cleanArtefacts.Status = Status.Failed;
+                cleanArtefacts.EndDate = _Clock.UtcNow;
+                cleanArtefacts.RunTime = cleanArtefacts.EndDate - cleanArtefacts.StartDate;
+                cleanArtefacts.FailMessages = [errorMessage ?? "No error message received from Document Service"];
+            }
+
+            onStageUpdated?.Invoke();
+
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                $"Clean Artefacts Stage Status: {cleanArtefacts.Status}");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                $"Clean Artefacts Stage End Date: {cleanArtefacts.EndDate:dd/MM/yyyy hh:mm:ss}");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                $"Clean Artefacts Stage Run Time: {cleanArtefacts.RunTime:d\\.hh\\:mm\\:ss\\.fff}");
+            _Logger.LogMessage(
+                StandardValues.LoggerValues.Info,
+                $"Finished clean artefacts stage for deployment {deployment.Id}");
+
+            finishedStages.Add(cleanArtefacts);
 
             if (finishedStages.Count == deployment.Stages.Count && finishedStages.All(fs => fs.Status == Status.Completed || fs.Status == Status.CompletedWithWarnings || fs.Status == Status.Skipped))
             {

@@ -20,15 +20,7 @@ namespace DeploymentManager.Components.Shared
         public EventCallback<StageModel> OnShowErrors { get; set; }
         [Parameter]
         public EventCallback<StageModel> OnShowWarnings { get; set; }
-
-        private string FormatTime(DateTime dateTime)
-        {
-            return DateTimeConverter.FormatTime(dateTime, _Clock.DefaultDate);
-        }
-
-        private string FormatRunTime(TimeSpan runTime)
-        {
-            return DateTimeConverter.FormatRunTime(runTime, _Clock.DefaultTimeSpan);
-        }
+        [Parameter]
+        public bool AlwaysShowFooter { get; set; }
     }
 }

@@ -112,7 +112,7 @@ namespace DeploymentManager.Services
         {
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
-                "Validating Approval Code");
+                "Validating approval code");
 
             bool approved = false;
 
@@ -133,7 +133,7 @@ namespace DeploymentManager.Services
                     $"Approval Code Validation Result: {approved}");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
-                    "Validated Approval Code");
+                    "Validated approval code");
             }
 
             catch (Exception ex)
