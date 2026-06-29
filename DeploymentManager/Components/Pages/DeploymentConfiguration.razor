@@ -76,13 +76,22 @@ else
                             {
                                 <div class="mb-3">
                                     <label class="form-label">Artefact</label>
-                                    <select class="form-control" disabled="@(Artefact != null)" @onchange="(e) => SetArtefact((string)e.Value)">
-                                        <option value="" disabled selected>Select an option</option>
-                                        @foreach (string artefact in ArtefactSelect)
-                                        {
-                                            <option value="@artefact">@artefact</option>
-                                        }
-                                    </select>
+                                    @if (Artefact == null)
+                                    {
+                                        <select class="form-control scrollable-select" size="@Math.Min(ArtefactSelect.Count + 1, 10)" @onchange="(e) => SetArtefact((string)e.Value)">
+                                            <option value="" disabled selected>Select an option</option>
+                                            @foreach (string artefact in ArtefactSelect)
+                                            {
+                                                <option value="@artefact">@artefact</option>
+                                            }
+                                        </select>
+                                    }
+                                    else
+                                    {
+                                        <select class="form-control" disabled>
+                                            <option selected>@SelectedArtefact</option>
+                                        </select>
+                                    }
                                 </div>
                             }
                         }

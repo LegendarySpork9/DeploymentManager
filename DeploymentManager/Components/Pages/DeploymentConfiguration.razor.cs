@@ -54,6 +54,7 @@ namespace DeploymentManager.Components.Pages
         private List<object> Artefacts = [];
         private List<string> ArtefactSelect = [];
         private object? Artefact = null;
+        private string SelectedArtefact = string.Empty;
         private DeploymentSettingsModel DeploymentSettings = new();
         private StageModel? SelectedStage;
         private StageModel? WarningStage;
@@ -192,6 +193,8 @@ namespace DeploymentManager.Components.Pages
                 StandardValues.LoggerValues.Debug,
                 $"Selected Artefact: {artefact}");
 
+            SelectedArtefact = artefact;
+
             if (DeploymentType == Entities.DeploymentType.GitHub)
             {
                 if (Environment != null && Environment.ArtefactSource == ArtefactSource.Actions)
@@ -316,6 +319,7 @@ namespace DeploymentManager.Components.Pages
             DeploymentType = null;
             Artefacts = [];
             Artefact = null;
+            SelectedArtefact = string.Empty;
             DeploymentSettings = new();
             Deployment = null;
             DeploymentConfig = null;

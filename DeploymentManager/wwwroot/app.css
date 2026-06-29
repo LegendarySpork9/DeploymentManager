@@ -177,6 +177,12 @@ h1:focus {
         color: #fff;
     }
 
+/* Scrollable Select */
+.scrollable-select {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
 /* Text utilities */
 .text-muted {
     color: #A9A9A9 !important;
