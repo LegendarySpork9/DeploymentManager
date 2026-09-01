@@ -1,4 +1,8 @@
 <Solution>
-  <Project Path="DeploymentManager.Test/DeploymentManager.Test.csproj" Id="7374dcb8-11d0-4049-b8a1-64f9da900ed5" />
   <Project Path="DeploymentManager/DeploymentManager.csproj" />
+  <Folder Name="/Tests/">
+    <Project Path="Tests/DeploymentManager.UnitTests/DeploymentManager.UnitTests.csproj" />
+    <Project Path="Tests/DeploymentManager.PersistenceTests/DeploymentManager.PersistenceTests.csproj" />
+    <Project Path="Tests/DeploymentManager.IntegrationTests/DeploymentManager.IntegrationTests.csproj" />
+  </Folder>
 </Solution>

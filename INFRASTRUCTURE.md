@@ -24,7 +24,9 @@ Deployment Manager is a self-hosted web application for orchestrating remote dep
 | TOTP Authentication | Otp.NET | 1.4.1 |
 | QR Code Generation | QRCoder | 1.8.0 |
 | Testing | MSTest | 4.0.2 |
+| Test SDK | Microsoft.NET.Test.Sdk | 18.0.1 |
 | Mocking | Moq | 4.20.72 |
+| Code Coverage | coverlet.collector | 6.0.2 |
 
 ## Solution Structure
 
@@ -53,7 +55,17 @@ DeploymentManager/
 |   +-- Services/                   # Business logic services
 |   +-- Values/                     # Constants and standard values
 |   +-- wwwroot/                    # Static assets (CSS, JS)
-+-- DeploymentManager.Test/         # Unit test project
++-- Tests/
+|   +-- DeploymentManager.UnitTests/        # Unit tests — converters, functions, helpers only
+|   |   +-- Converters/                     # Converter tests
+|   |   +-- Functions/                      # Function tests
+|   |   +-- Models/                         # Model transformation tests
+|   +-- DeploymentManager.PersistenceTests/ # Persistence tests — file I/O, implementations
+|   |   +-- Implementations/               # Wrapper tests (file system, GitHub client, clock)
+|   |   +-- Services/                       # Service tests (approval, document, deployment history)
+|   +-- DeploymentManager.IntegrationTests/ # Integration tests — orchestrators, service orchestration
+|   |   +-- Orchestrators/                  # Deployment orchestrator tests
+|   |   +-- Services/                       # GitHub, IIS, Task Scheduler service tests
 +-- .github/workflows/              # CI/CD pipeline definitions
 ```
 
@@ -292,7 +304,7 @@ All workflows run on `windows-latest` using .NET 10.0.x SDK.
 | Workflow | Trigger | Steps |
 |---|---|---|
 | **CI on Commit** (`Commit.yml`) | Push to any branch | Checkout, Restore, Build (Release) |
-| **CI on Pull Request** (`Pull Request.yml`) | PR to any branch | Checkout, Restore, Build (Release), Run Tests |
+| **CI on Pull Request** (`Pull Request.yml`) | PR to any branch | Checkout, Restore, Build (Release), Run Tests with Coverage (`dotnet test --collect:"XPlat Code Coverage"`), Generate Coverage Report, Post Coverage Status, Upload Coverage Artifact |
 | **Check for Linked Issue** (`PR Linked Issue.yml`) | PR opened/edited/reopened/synchronised | Verifies PR has linked GitHub issues via description, comments, or Development section |
 
 ### Build Configuration
@@ -300,6 +312,15 @@ All workflows run on `windows-latest` using .NET 10.0.x SDK.
 - **SDK:** .NET 10.0.x
 - **Configuration:** Release
 - **Test Runner:** `dotnet test` (MSTest)
+
+### Code Coverage
+
+- **Collector:** XPlat Code Coverage (via `coverlet.collector`)
+- **Configuration:** `coverlet.runsettings` in solution root
+- **Report Generator:** `dotnet-reportgenerator-globaltool`
+- **Report Formats:** Cobertura, JsonSummary
+- **Exclusions:** Program entry points, Models, Entities, generated code
+- **CI Integration:** Coverage percentage posted to PR status and uploaded as artifact
 
 ## Hosting Requirements
 

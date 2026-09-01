@@ -12,7 +12,8 @@ namespace DeploymentManager.Implementations
     {
         private readonly ILoggerService _Logger;
         private readonly IFileSystem _FileSystem;
-
+        private readonly IRestClientWrapper _RestClient;
+        private readonly IHttpDownloadClient _DownloadClient;
         private readonly GitHubOptionsModel Options;
         private readonly string BaseURL = "https://api.github.com";
 
@@ -20,10 +21,14 @@ namespace DeploymentManager.Implementations
         public GitHubClientWrapper(
             ILoggerService _logger,
             IFileSystem _fileSystem,
+            IRestClientWrapper _restClient,
+            IHttpDownloadClient _downloadClient,
             GitHubOptionsModel options)
         {
             _Logger = _logger;
             _FileSystem = _fileSystem;
+            _RestClient = _restClient;
+            _DownloadClient = _downloadClient;
             Options = options;
         }
 
@@ -44,15 +49,6 @@ namespace DeploymentManager.Implementations
                     StandardValues.LoggerValues.Debug,
                     $"URL: {url}");
 
-                RestClient client = new(url);
-                client.AddDefaultHeader(
-                    "Authorization",
-                    $"Bearer {Options.Auth}");
-
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
-                    "Configured Rest Client");
-
                 RestRequest request = new()
                 {
                     Method = Method.Get
@@ -65,7 +61,13 @@ namespace DeploymentManager.Implementations
                     StandardValues.LoggerValues.Debug,
                     "Sending Request");
 
-                RestResponse response = await client.ExecuteAsync(request);
+                request.AddHeader(
+                    "Authorization",
+                    $"Bearer {Options.Auth}");
+
+                RestResponse response = await _RestClient.ExecuteAsync(
+                    url,
+                    request);
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -106,29 +108,18 @@ namespace DeploymentManager.Implementations
 
             try
             {
-                HttpClient client = new();
-                client.DefaultRequestHeaders.Add(
-                    "User-Agent",
-                    "DeploymentManager");
-                client.DefaultRequestHeaders.Add(
-                    "Accept",
-                    "application/vnd.github+json");
-                client.DefaultRequestHeaders.Add(
-                    "Authorization",
-                    $"Bearer {Options.Auth}");
-
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
-                    "Configured HTTP Client");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
                     "Sending Request");
 
-                HttpResponseMessage response = await client.GetAsync(
+                Stream? downloadStream = await _DownloadClient.DownloadStreamAsync(
                     downloadURL,
-                    HttpCompletionOption.ResponseHeadersRead);
+                    Options.Auth);
 
-                response.EnsureSuccessStatusCode();
+                if (downloadStream == null)
+                {
+                    throw new Exception("Failed to download artefact");
+                }
 
                 await _FileSystem.CreateDirectory(downloadPath);
 
@@ -136,7 +127,7 @@ namespace DeploymentManager.Implementations
                     StandardValues.LoggerValues.Debug,
                     "Created Directory");
 
-                using (Stream stream = await response.Content.ReadAsStreamAsync())
+                using (Stream stream = downloadStream)
                 {
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Debug,
@@ -186,15 +177,6 @@ namespace DeploymentManager.Implementations
                     StandardValues.LoggerValues.Debug,
                     $"URL: {url}");
 
-                RestClient client = new(url);
-                client.AddDefaultHeader(
-                    "Authorization",
-                    $"Bearer {Options.Auth}");
-
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
-                    "Configured Rest Client");
-
                 RestRequest request = new()
                 {
                     Method = Method.Get
@@ -207,7 +189,13 @@ namespace DeploymentManager.Implementations
                     StandardValues.LoggerValues.Debug,
                     "Sending Request");
 
-                RestResponse response = await client.ExecuteAsync(request);
+                request.AddHeader(
+                    "Authorization",
+                    $"Bearer {Options.Auth}");
+
+                RestResponse response = await _RestClient.ExecuteAsync(
+                    url,
+                    request);
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
@@ -252,20 +240,17 @@ namespace DeploymentManager.Implementations
 
             try
             {
-                HttpClient client = new();
-
-                _Logger.LogMessage(
-                    StandardValues.LoggerValues.Debug,
-                    "Configured HTTP Client");
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
                     "Sending Request");
 
-                HttpResponseMessage response = await client.GetAsync(
-                    downloadURL,
-                    HttpCompletionOption.ResponseHeadersRead);
+                Stream? downloadStream = await _DownloadClient.DownloadStreamAsync(
+                    downloadURL);
 
-                response.EnsureSuccessStatusCode();
+                if (downloadStream == null)
+                {
+                    throw new Exception("Failed to download release asset");
+                }
 
                 await _FileSystem.CreateDirectory(downloadPath);
 
@@ -273,7 +258,7 @@ namespace DeploymentManager.Implementations
                     StandardValues.LoggerValues.Debug,
                     "Created Directory");
 
-                using (Stream stream = await response.Content.ReadAsStreamAsync())
+                using (Stream stream = downloadStream)
                 {
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Debug,

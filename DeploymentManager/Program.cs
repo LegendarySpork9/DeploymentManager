@@ -56,6 +56,8 @@ namespace DeploymentManager
 
             builder.Services.AddSingleton<ILoggerService>(_logger);
             builder.Services.AddSingleton<IFileSystem, FileSystemWrapper>();
+            builder.Services.AddSingleton<IRestClientWrapper, RestClientWrapper>();
+            builder.Services.AddSingleton<IHttpDownloadClient, HttpDownloadClient>();
             builder.Services.AddSingleton<IGitHubClient, GitHubClientWrapper>();
             builder.Services.AddSingleton<IIISClient, IISClientWrapper>();
             builder.Services.AddSingleton<ITaskScheduler, TaskSchedulerWrapper>();
