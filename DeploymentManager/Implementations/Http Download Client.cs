@@ -6,6 +6,7 @@ namespace DeploymentManager.Implementations
 {
     public class HttpDownloadClient : IHttpDownloadClient
     {
+        private static readonly HttpClient _Client = new();
         private readonly ILoggerService _Logger;
 
         // Sets the class's global variables.
@@ -25,14 +26,16 @@ namespace DeploymentManager.Implementations
 
             try
             {
-                HttpClient client = new();
-                client.DefaultRequestHeaders.Add(
+                HttpRequestMessage request = new(
+                    HttpMethod.Get,
+                    url);
+                request.Headers.Add(
                     "User-Agent",
                     "DeploymentManager");
-                client.DefaultRequestHeaders.Add(
+                request.Headers.Add(
                     "Accept",
                     "application/vnd.github+json");
-                client.DefaultRequestHeaders.Add(
+                request.Headers.Add(
                     "Authorization",
                     $"Bearer {bearerToken}");
 
@@ -43,8 +46,8 @@ namespace DeploymentManager.Implementations
                     StandardValues.LoggerValues.Debug,
                     "Sending Request");
 
-                HttpResponseMessage response = await client.GetAsync(
-                    url,
+                HttpResponseMessage response = await _Client.SendAsync(
+                    request,
                     HttpCompletionOption.ResponseHeadersRead);
 
                 _Logger.LogMessage(
@@ -78,8 +81,6 @@ namespace DeploymentManager.Implementations
 
             try
             {
-                HttpClient client = new();
-
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Debug,
                     "Configured HTTP Client");
@@ -87,7 +88,7 @@ namespace DeploymentManager.Implementations
                     StandardValues.LoggerValues.Debug,
                     "Sending Request");
 
-                HttpResponseMessage response = await client.GetAsync(
+                HttpResponseMessage response = await _Client.GetAsync(
                     url,
                     HttpCompletionOption.ResponseHeadersRead);
 

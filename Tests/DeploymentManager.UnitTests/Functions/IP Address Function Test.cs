@@ -8,20 +8,21 @@ namespace DeploymentManager.UnitTests.Functions
     public class IPAddressFunctionTest
     {
         /// <summary>
-        /// Tests whether the FetchIpAddress method returns the IP from the CF-Connecting-IP header.
+        /// Tests whether the FetchIpAddress method ignores CF-Connecting-IP when the direct IP is not from Cloudflare.
         /// </summary>
         [TestMethod]
-        public void TestFetchIpAddressCFConnectingIP()
+        public void TestFetchIpAddressCFConnectingIPIgnoredWithoutCloudflare()
         {
             DefaultHttpContext context = new();
             context.Request.Headers["CF-Connecting-IP"] = "203.0.113.1";
+            context.Connection.RemoteIpAddress = System.Net.IPAddress.Parse("192.168.1.1");
 
             HttpContextAccessor accessor = new() { HttpContext = context };
 
             string actual = IPAddressFunction.FetchIpAddress(accessor);
 
             Assert.AreEqual(
-                "203.0.113.1",
+                "192.168.1.1",
                 actual);
         }
 
@@ -62,21 +63,22 @@ namespace DeploymentManager.UnitTests.Functions
         }
 
         /// <summary>
-        /// Tests whether the FetchIpAddress method prefers CF-Connecting-IP over X-Forwarded-For.
+        /// Tests whether the FetchIpAddress method falls through to X-Forwarded-For when the direct IP is not from Cloudflare.
         /// </summary>
         [TestMethod]
-        public void TestFetchIpAddressCFConnectingIPPriority()
+        public void TestFetchIpAddressCFConnectingIPFallsThrough()
         {
             DefaultHttpContext context = new();
             context.Request.Headers["CF-Connecting-IP"] = "203.0.113.1";
             context.Request.Headers["X-Forwarded-For"] = "198.51.100.5";
+            context.Connection.RemoteIpAddress = System.Net.IPAddress.Parse("192.168.1.1");
 
             HttpContextAccessor accessor = new() { HttpContext = context };
 
             string actual = IPAddressFunction.FetchIpAddress(accessor);
 
             Assert.AreEqual(
-                "203.0.113.1",
+                "198.51.100.5",
                 actual);
         }
 

@@ -6,6 +6,7 @@ using DeploymentManager.Models;
 using DeploymentManager.Orchestrators;
 using DeploymentManager.Services;
 using DeploymentManager.Values;
+using Microsoft.AspNetCore.DataProtection;
 
 namespace DeploymentManager
 {
@@ -54,6 +55,7 @@ namespace DeploymentManager
                 builder.Services.AddSingleton(appSettings.GitHubOptions);
             }
 
+            builder.Services.AddDataProtection();
             builder.Services.AddSingleton<ILoggerService>(_logger);
             builder.Services.AddSingleton<IFileSystem, FileSystemWrapper>();
             builder.Services.AddSingleton<IRestClientWrapper, RestClientWrapper>();
