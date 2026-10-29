@@ -3,6 +3,7 @@ using System.IO;
 using DeploymentManager.Abstractions;
 using DeploymentManager.Models;
 using DeploymentManager.Services;
+using Microsoft.AspNetCore.DataProtection;
 using Moq;
 using Newtonsoft.Json;
 using OtpNet;
@@ -14,6 +15,7 @@ namespace DeploymentManager.PersistenceTests.Services
     {
         private readonly Mock<ILoggerService> _MockLogger = new();
         private readonly Mock<IFileSystem> _MockFileSystem = new();
+        private readonly IDataProtectionProvider _DataProtectionProvider = DataProtectionProvider.Create("DeploymentManager.Tests");
 
         private readonly AppSettingsModel AppSettings = new()
         {
@@ -62,6 +64,7 @@ namespace DeploymentManager.PersistenceTests.Services
             ApprovalService approvalService = new(
                 _MockLogger.Object,
                 _MockFileSystem.Object,
+                _DataProtectionProvider,
                 AppSettings);
 
             string actual = approvalService.GenerateSecret();
@@ -78,6 +81,7 @@ namespace DeploymentManager.PersistenceTests.Services
             ApprovalService approvalService = new(
                 _MockLogger.Object,
                 _MockFileSystem.Object,
+                _DataProtectionProvider,
                 AppSettings);
 
             string actual = approvalService.GenerateSecret();
@@ -95,6 +99,7 @@ namespace DeploymentManager.PersistenceTests.Services
             ApprovalService approvalService = new(
                 _MockLogger.Object,
                 _MockFileSystem.Object,
+                _DataProtectionProvider,
                 AppSettings);
 
             string first = approvalService.GenerateSecret();
@@ -114,6 +119,7 @@ namespace DeploymentManager.PersistenceTests.Services
             ApprovalService approvalService = new(
                 _MockLogger.Object,
                 _MockFileSystem.Object,
+                _DataProtectionProvider,
                 AppSettings);
 
             string actual = approvalService.GenerateQRCodeURL("JBSWY3DPEHPK3PXP");
@@ -134,6 +140,7 @@ namespace DeploymentManager.PersistenceTests.Services
             ApprovalService approvalService = new(
                 _MockLogger.Object,
                 _MockFileSystem.Object,
+                _DataProtectionProvider,
                 AppSettings);
 
             string actual = approvalService.GenerateQRCodeURL(secret);
@@ -152,6 +159,7 @@ namespace DeploymentManager.PersistenceTests.Services
             ApprovalService approvalService = new(
                 _MockLogger.Object,
                 _MockFileSystem.Object,
+                _DataProtectionProvider,
                 AppSettings);
 
             string actual = approvalService.GenerateQRCodeURL("JBSWY3DPEHPK3PXP");
@@ -176,6 +184,7 @@ namespace DeploymentManager.PersistenceTests.Services
             ApprovalService approvalService = new(
                 _MockLogger.Object,
                 _MockFileSystem.Object,
+                _DataProtectionProvider,
                 AppSettings);
 
             string actual = approvalService.GenerateQRCodeBase64("otpauth://totp/DeploymentManager?secret=JBSWY3DPEHPK3PXP&issuer=DeploymentManager&digits=6&period=30");
@@ -192,6 +201,7 @@ namespace DeploymentManager.PersistenceTests.Services
             ApprovalService approvalService = new(
                 _MockLogger.Object,
                 _MockFileSystem.Object,
+                _DataProtectionProvider,
                 AppSettings);
 
             string actual = approvalService.GenerateQRCodeBase64("otpauth://totp/DeploymentManager?secret=JBSWY3DPEHPK3PXP&issuer=DeploymentManager&digits=6&period=30");
@@ -214,6 +224,7 @@ namespace DeploymentManager.PersistenceTests.Services
             ApprovalService approvalService = new(
                 _MockLogger.Object,
                 _MockFileSystem.Object,
+                _DataProtectionProvider,
                 AppSettings);
 
             bool actual = approvalService.ValidateCode(
@@ -232,6 +243,7 @@ namespace DeploymentManager.PersistenceTests.Services
             ApprovalService approvalService = new(
                 _MockLogger.Object,
                 _MockFileSystem.Object,
+                _DataProtectionProvider,
                 AppSettings);
 
             bool actual = approvalService.ValidateCode(
@@ -250,6 +262,7 @@ namespace DeploymentManager.PersistenceTests.Services
             ApprovalService approvalService = new(
                 _MockLogger.Object,
                 _MockFileSystem.Object,
+                _DataProtectionProvider,
                 AppSettings);
 
             bool actual = approvalService.ValidateCode(
@@ -268,6 +281,7 @@ namespace DeploymentManager.PersistenceTests.Services
             ApprovalService approvalService = new(
                 _MockLogger.Object,
                 _MockFileSystem.Object,
+                _DataProtectionProvider,
                 AppSettings);
 
             bool actual = approvalService.ValidateCode(
@@ -291,6 +305,7 @@ namespace DeploymentManager.PersistenceTests.Services
             ApprovalService approvalService = new(
                 _MockLogger.Object,
                 _MockFileSystem.Object,
+                _DataProtectionProvider,
                 AppSettings);
 
             AuthenticatorCredentialModel credential = new()
@@ -320,6 +335,7 @@ namespace DeploymentManager.PersistenceTests.Services
             ApprovalService approvalService = new(
                 _MockLogger.Object,
                 _MockFileSystem.Object,
+                _DataProtectionProvider,
                 AppSettings);
 
             AuthenticatorCredentialModel credential = new()
@@ -350,13 +366,15 @@ namespace DeploymentManager.PersistenceTests.Services
             };
 
             string credentialJson = JsonConvert.SerializeObject(expected);
+            string encryptedJson = _DataProtectionProvider.CreateProtector("DeploymentManager.Authenticator").Protect(credentialJson);
 
             _MockFileSystem.Setup(fs => fs.ReadAllText(It.IsAny<string>()))
-                .ReturnsAsync(credentialJson);
+                .ReturnsAsync(encryptedJson);
 
             ApprovalService approvalService = new(
                 _MockLogger.Object,
                 _MockFileSystem.Object,
+                _DataProtectionProvider,
                 AppSettings);
 
             AuthenticatorCredentialModel? actual = await approvalService.GetCredential();
@@ -382,6 +400,7 @@ namespace DeploymentManager.PersistenceTests.Services
             ApprovalService approvalService = new(
                 _MockLogger.Object,
                 _MockFileSystem.Object,
+                _DataProtectionProvider,
                 AppSettings);
 
             AuthenticatorCredentialModel? actual = await approvalService.GetCredential();
@@ -402,13 +421,15 @@ namespace DeploymentManager.PersistenceTests.Services
             };
 
             string credentialJson = JsonConvert.SerializeObject(credential);
+            string encryptedJson = _DataProtectionProvider.CreateProtector("DeploymentManager.Authenticator").Protect(credentialJson);
 
             _MockFileSystem.Setup(fs => fs.ReadAllText(It.IsAny<string>()))
-                .ReturnsAsync(credentialJson);
+                .ReturnsAsync(encryptedJson);
 
             ApprovalService approvalService = new(
                 _MockLogger.Object,
                 _MockFileSystem.Object,
+                _DataProtectionProvider,
                 AppSettings);
 
             bool actual = await approvalService.IsSetupComplete();
@@ -428,6 +449,7 @@ namespace DeploymentManager.PersistenceTests.Services
             ApprovalService approvalService = new(
                 _MockLogger.Object,
                 _MockFileSystem.Object,
+                _DataProtectionProvider,
                 AppSettings);
 
             bool actual = await approvalService.IsSetupComplete();

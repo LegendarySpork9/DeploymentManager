@@ -2,6 +2,7 @@
 using DeploymentManager.Abstractions;
 using DeploymentManager.Models;
 using DeploymentManager.Values;
+using Microsoft.AspNetCore.DataProtection;
 using Newtonsoft.Json;
 using OtpNet;
 using QRCoder;
@@ -12,6 +13,7 @@ namespace DeploymentManager.Services
     {
         private readonly ILoggerService _Logger;
         private readonly IFileSystem _FileSystem;
+        private readonly IDataProtector _Protector;
 
         private readonly AppSettingsModel AppSettings;
 
@@ -19,10 +21,12 @@ namespace DeploymentManager.Services
         public ApprovalService(
             ILoggerService _logger,
             IFileSystem _fileSystem,
+            IDataProtectionProvider dataProtectionProvider,
             AppSettingsModel appSettings)
         {
             _Logger = _logger;
             _FileSystem = _fileSystem;
+            _Protector = dataProtectionProvider.CreateProtector("DeploymentManager.Authenticator");
             AppSettings = appSettings;
         }
 
@@ -166,12 +170,13 @@ namespace DeploymentManager.Services
                 await _FileSystem.CreateDirectory(AppSettings.ApprovalCredentialLocation);
 
                 string credentialJson = JsonConvert.SerializeObject(credential);
+                string encryptedJson = _Protector.Protect(credentialJson);
 
                 await _FileSystem.WriteAllText(
                     Path.Combine(
                         AppSettings.ApprovalCredentialLocation,
                         "credential.json"),
-                    credentialJson);
+                    encryptedJson);
 
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
@@ -208,7 +213,8 @@ namespace DeploymentManager.Services
                 string filePath = Path.Combine(
                     AppSettings.ApprovalCredentialLocation,
                     "credential.json");
-                string credentialJson = await _FileSystem.ReadAllText(filePath);
+                string encryptedJson = await _FileSystem.ReadAllText(filePath);
+                string credentialJson = _Protector.Unprotect(encryptedJson);
 
                 authenticatorCredential = JsonConvert.DeserializeObject<AuthenticatorCredentialModel>(credentialJson);
 

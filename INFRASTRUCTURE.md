@@ -87,6 +87,7 @@ All services are registered as **singletons** in `Program.cs`. External dependen
 | `IIISClient` | `IISClientWrapper` | IIS site and app pool management |
 | `ITaskScheduler` | `TaskSchedulerWrapper` | Windows Task Scheduler management |
 | `IClock` | `SystemClockProvider` | Time operations |
+| `IDataProtectionProvider` | (ASP.NET Core built-in) | Encryption for TOTP credentials |
 
 ### Services
 
@@ -150,7 +151,7 @@ The application uses **file-based persistence** with no database dependency.
 | Data | Storage Format | Location (Configurable) |
 |---|---|---|
 | Deployment History | JSON files (one per project) | `DeploymentHistoryLocation` |
-| TOTP Credentials | JSON file (`credential.json`) | `ApprovalCredentialLocation` |
+| TOTP Credentials | Encrypted JSON file (`credential.json`) | `ApprovalCredentialLocation` |
 | Downloaded Artefacts | ZIP/extracted files | `ArtefactDownloadLocation` |
 | Application Logs | Rolling text file | `Logs/DeploymentManager.log` |
 
@@ -168,6 +169,8 @@ The application uses **file-based persistence** with no database dependency.
 - 20-byte Base32-encoded secrets
 - QR code generated for authenticator app enrolment
 - Verification window: +/- 1 time step
+- Credentials encrypted at rest using ASP.NET Core Data Protection API (`IDataProtector` with purpose `DeploymentManager.Authenticator`)
+- Authenticator Setup page requires authentication via `ProtectedSessionStorage` — unauthenticated users are redirected to `/login`
 
 ### Remote Machine Authentication
 
@@ -185,6 +188,17 @@ The application uses **file-based persistence** with no database dependency.
 - HTTPS enforced with HSTS in production
 - Antiforgery token validation on all forms
 - Status code pages with re-execution for 404 handling
+
+### IP Address Extraction
+
+`IPAddressFunction.FetchIpAddress` resolves the client IP in priority order:
+
+1. `CF-Connecting-IP` — only trusted when the direct connection IP (`RemoteIpAddress`) belongs to a known Cloudflare IPv4 range
+2. `X-Forwarded-For` — first IP from comma-separated list
+3. `RemoteIpAddress` (direct connection)
+4. Empty string (fallback)
+
+Cloudflare IP ranges are maintained as a static array and validated using CIDR prefix matching.
 
 ## External Integrations
 

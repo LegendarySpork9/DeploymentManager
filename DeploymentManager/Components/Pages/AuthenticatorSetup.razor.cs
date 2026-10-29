@@ -5,6 +5,7 @@ using DeploymentManager.Models.Forms;
 using DeploymentManager.Services;
 using DeploymentManager.Values;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
 namespace DeploymentManager.Components.Pages
 {
@@ -14,6 +15,10 @@ namespace DeploymentManager.Components.Pages
         private ILoggerService _Logger { get; set; } = default!;
         [Inject]
         private ApprovalService ApprovalService { get; set; } = default!;
+        [Inject]
+        private ProtectedSessionStorage SessionStorage { get; set; } = default!;
+        [Inject]
+        private NavigationManager Navigation { get; set; } = default!;
 
         private readonly CodeFormModel VerificationForm = new();
 
@@ -32,6 +37,17 @@ namespace DeploymentManager.Components.Pages
         /// </summary>
         protected override async Task OnInitializedAsync()
         {
+            ProtectedBrowserStorageResult<bool> loggedInResult = await SessionStorage.GetAsync<bool>("userLoggedIn");
+
+            if (!loggedInResult.Success || !loggedInResult.Value)
+            {
+                Navigation.NavigateTo(
+                    "/login",
+                    true);
+
+                return;
+            }
+
             _Logger.LogMessage(
                 StandardValues.LoggerValues.Info,
                 "Opened Authenticator Setup Page");
