@@ -16,7 +16,11 @@ namespace DeploymentManager.Implementations
             string device,
             DeviceAuthModel? auth = null)
         {
-            using (TaskService taskService = new(device, auth?.Username, auth?.Domain, auth?.Password))
+            using (TaskService taskService = new(
+                device,
+                auth?.Username,
+                auth?.Domain,
+                auth?.Password))
             {
                 Task task = taskService.GetTask(taskName);
 
@@ -54,7 +58,11 @@ namespace DeploymentManager.Implementations
             string device,
             DeviceAuthModel? auth = null)
         {
-            using (TaskService taskService = new(device, auth?.Username, auth?.Domain, auth?.Password))
+            using (TaskService taskService = new(
+                device,
+                auth?.Username,
+                auth?.Domain,
+                auth?.Password))
             {
                 Task task = taskService.GetTask(taskName);
                 task.Definition.Settings.Enabled = true;

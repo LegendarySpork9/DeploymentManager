@@ -97,7 +97,9 @@ namespace DeploymentManager.Services
                     $"Failed to download artefact, {artefact.Name}, from GitHub for {repository} repository");
             }
 
-            return (downloadedFile, errorMessage);
+            return (
+                downloadedFile,
+                errorMessage);
         }
 
         /// <summary>
@@ -177,7 +179,9 @@ namespace DeploymentManager.Services
                     $"Failed to download release asset, {asset.Name}, from GitHub for {repository} repository");
             }
 
-            return (downloadedFile, errorMessage);
+            return (
+                downloadedFile,
+                errorMessage);
         }
     }
 }
