@@ -140,6 +140,12 @@ namespace DeploymentManager.Components.Pages
 
             IsLoading = true;
 
+            if (Project == null)
+            {
+                IsLoading = false;
+                return;
+            }
+
             if (deploymentType == "GitHub")
             {
                 DeploymentType = Entities.DeploymentType.GitHub;
@@ -254,6 +260,12 @@ namespace DeploymentManager.Components.Pages
                 "Deploy Clicked");
 
             IsLoading = true;
+
+            if (Project == null || DeploymentType == null || DeployEnvironment == null || Environment == null)
+            {
+                IsLoading = false;
+                return;
+            }
 
             DeploymentConfig = new()
             {
