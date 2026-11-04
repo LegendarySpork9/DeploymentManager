@@ -22,7 +22,7 @@ namespace DeploymentManager.Services
         /// <summary>
         /// Stops the given IIS site.
         /// </summary>
-        public async Task<(bool, string?)> StopSite(
+        public Task<(bool, string?)> StopSite(
             string site,
             string device,
             DeviceAuthModel? auth = null)
@@ -73,13 +73,15 @@ namespace DeploymentManager.Services
                     $"Failed to stop IIS site, {site}");
             }
 
-            return (stopped, message);
+            return Task.FromResult((
+                stopped,
+                message));
         }
 
         /// <summary>
         /// Starts the given IIS site.
         /// </summary>
-        public async Task<(bool, string?)> StartSite(
+        public Task<(bool, string?)> StartSite(
             string site,
             string device,
             DeviceAuthModel? auth = null)
@@ -120,7 +122,9 @@ namespace DeploymentManager.Services
                     $"Failed to start IIS site, {site}");
             }
 
-            return (started, errorMessage);
+            return Task.FromResult((
+                started,
+                errorMessage));
         }
     }
 }

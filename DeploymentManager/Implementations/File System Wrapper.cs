@@ -21,7 +21,9 @@ namespace DeploymentManager.Implementations
             string text)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-            await File.WriteAllTextAsync(path, text);
+            await File.WriteAllTextAsync(
+                path,
+                text);
         }
 
         /// <summary>
@@ -55,7 +57,10 @@ namespace DeploymentManager.Implementations
             string source,
             string destination)
         {
-            File.Copy(source, destination, true);
+            File.Copy(
+                source,
+                destination,
+                true);
             return Task.CompletedTask;
         }
 
@@ -102,7 +107,9 @@ namespace DeploymentManager.Implementations
         /// </summary>
         public Task DeleteDirectory(string path)
         {
-            Directory.Delete(path, true);
+            Directory.Delete(
+                path,
+                true);
             return Task.CompletedTask;
         }
 

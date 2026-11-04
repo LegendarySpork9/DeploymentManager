@@ -318,8 +318,7 @@ namespace DeploymentManager.Orchestrators
                 deploymentConfiguration.Project.Name,
                 deployment);
 
-            if (deployment.Status == Status.Completed ||
-                deployment.Status == Status.CompletedWithWarnings)
+            if (deployment.Status == Status.Completed || deployment.Status == Status.CompletedWithWarnings)
             {
                 await _DeploymentHistoryService.WriteDeploymentStatus(new DeploymentStatusModel
                 {

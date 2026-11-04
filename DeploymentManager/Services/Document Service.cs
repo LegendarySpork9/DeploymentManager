@@ -105,7 +105,9 @@ namespace DeploymentManager.Services
                     $"Failed to obtain extracted files for artefact, {artefact}");
             }
 
-            return (files, errorMessage);
+            return (
+                files,
+                errorMessage);
         }
 
         /// <summary>
@@ -188,7 +190,9 @@ namespace DeploymentManager.Services
                     $"Failed to move files for artefact, {artefact}, to {path}");
             }
 
-            return (moved, errorMessages);
+            return (
+                moved,
+                errorMessages);
         }
 
         /// <summary>
@@ -232,7 +236,9 @@ namespace DeploymentManager.Services
                     $"Failed to delete artefact, {artefact}");
             }
 
-            return (deleted, errorMessage);
+            return (
+                deleted,
+                errorMessage);
         }
     }
 }

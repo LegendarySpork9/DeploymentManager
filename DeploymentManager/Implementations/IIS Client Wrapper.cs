@@ -136,6 +136,7 @@ namespace DeploymentManager.Implementations
                         action);
                 }
             }
+
             finally
             {
                 CloseHandle(token);

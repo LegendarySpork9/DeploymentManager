@@ -157,7 +157,9 @@ namespace DeploymentManager.Implementations
                     ex.ToString());
             }
 
-            return (downloadedFile, errorMessage);
+            return (
+                downloadedFile,
+                errorMessage);
         }
 
         /// <summary>
@@ -288,7 +290,9 @@ namespace DeploymentManager.Implementations
                     ex.ToString());
             }
 
-            return (downloadedFile, errorMessage);
+            return (
+                downloadedFile,
+                errorMessage);
         }
 
         /// <summary>

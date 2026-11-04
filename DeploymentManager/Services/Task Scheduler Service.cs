@@ -22,7 +22,7 @@ namespace DeploymentManager.Services
         /// <summary>
         /// Stops the given task scheduler task.
         /// </summary>
-        public async Task<(bool, string?)> StopTask(
+        public Task<(bool, string?)> StopTask(
             string taskName,
             string device,
             DeviceAuthModel? auth = null)
@@ -73,13 +73,15 @@ namespace DeploymentManager.Services
                     $"Failed to stop Task Scheduler task, {taskName}");
             }
 
-            return (stopped, message);
+            return Task.FromResult((
+                stopped,
+                message));
         }
 
         /// <summary>
         /// Starts the given task scheduler task.
         /// </summary>
-        public async Task<(bool, string?)> StartTask(
+        public Task<(bool, string?)> StartTask(
             string taskName,
             string device,
             DeviceAuthModel? auth = null)
@@ -120,7 +122,9 @@ namespace DeploymentManager.Services
                     $"Failed to start Task Scheduler task, {taskName}");
             }
 
-            return (started, errorMessage);
+            return Task.FromResult((
+                started,
+                errorMessage));
         }
     }
 }
