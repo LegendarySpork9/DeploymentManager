@@ -78,11 +78,32 @@ namespace DeploymentManager.Components.Pages
                     return;
                 }
 
-                string credentialsToEncode = $"{LoginInformation.Username}:{HashFunction.HashString(LoginInformation.Password)}";
-                byte[] credentialsBytes = Encoding.UTF8.GetBytes(credentialsToEncode);
-                string encodedCredentials = Convert.ToBase64String(credentialsBytes);
+                byte[] storedBytes = Convert.FromBase64String(AppSettings.SiteAuth);
+                string storedCredentials = Encoding.UTF8.GetString(storedBytes);
+                int separatorIndex = storedCredentials.IndexOf(':');
 
-                if (encodedCredentials == AppSettings.SiteAuth)
+                if (separatorIndex < 0)
+                {
+                    ErrorMessage = "An error occurred during authentication. Please try again.";
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Error,
+                        "Malformed SiteAuth configuration: missing username separator.");
+                    IsLoading = false;
+                    return;
+                }
+
+                string storedUsername = storedCredentials[..separatorIndex];
+                string storedPasswordHash = storedCredentials[(separatorIndex + 1)..];
+
+                bool usernameMatch = string.Equals(
+                    LoginInformation.Username,
+                    storedUsername,
+                    StringComparison.Ordinal);
+                bool passwordMatch = HashFunction.VerifyPassword(
+                    LoginInformation.Password,
+                    storedPasswordHash);
+
+                if (usernameMatch && passwordMatch)
                 {
                     RateLimiter.ResetAttempts(ipAddress);
 
