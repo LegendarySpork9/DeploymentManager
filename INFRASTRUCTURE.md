@@ -161,7 +161,7 @@ The application uses **file-based persistence** with no database dependency.
 ### Site Authentication
 
 - Username and password login
-- Credentials stored as a **Base64-encoded SHA512 hash** in `appsettings.json` (`SiteAuth`)
+- Credentials stored as a **Base64-encoded PBKDF2-HMAC-SHA256 hash with per-user salt** in `appsettings.json` (`SiteAuth`)
 - Session managed via Blazor's `ProtectedSessionStorage` (encrypted browser session)
 - **Login rate limiting:** Failed login attempts are tracked per IP address using an in-memory `ConcurrentDictionary`. After a configurable number of failed attempts within a time window, the IP is locked out for a configurable duration. Defaults: 5 attempts within 5 minutes triggers a 15-minute lockout. Successful login resets the attempt counter.
 
@@ -239,7 +239,7 @@ Cloudflare IP ranges are maintained as a static array and validated using CIDR p
 ```json
 {
   "AppSettings": {
-    "SiteAuth": "<Base64-encoded SHA256 hash>",
+    "SiteAuth": "<Base64-encoded PBKDF2 hash (username:salt$hash)>",
     "DeploymentHistoryLocation": "<path to history directory>",
     "ApprovalCredentialLocation": "<path to TOTP credential directory>",
     "ArtefactDownloadLocation": "<path to artefact download directory>",
