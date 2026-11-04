@@ -16,5 +16,8 @@ namespace DeploymentManager.Models
         public List<EnvironmentModel> Environments { get; set; }
         public GitHubOptionsModel GitHubOptions { get; set; }
         public List<ProjectModel> Projects { get; set; }
+        public int MaxLoginAttempts { get; set; }
+        public int LoginAttemptWindowMinutes { get; set; }
+        public int LockoutDurationMinutes { get; set; }
     }
 }

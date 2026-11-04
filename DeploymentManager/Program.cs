@@ -64,6 +64,7 @@ namespace DeploymentManager
             builder.Services.AddSingleton<IIISClient, IISClientWrapper>();
             builder.Services.AddSingleton<ITaskScheduler, TaskSchedulerWrapper>();
             builder.Services.AddSingleton<IClock, SystemClockProvider>();
+            builder.Services.AddSingleton<ILoginRateLimiter, LoginRateLimiterWrapper>();
             builder.Services.AddSingleton<IServiceProvider, ServiceProvider>();
             builder.Services.AddSingleton<ApprovalService>();
             builder.Services.AddSingleton<GitHubService>();

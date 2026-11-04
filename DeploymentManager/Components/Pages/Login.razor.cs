@@ -22,10 +22,13 @@ namespace DeploymentManager.Components.Pages
         private ProtectedSessionStorage SessionStorage { get; set; } = default!;
         [Inject]
         private AppSettingsModel AppSettings { get; set; } = default!;
+        [Inject]
+        private ILoginRateLimiter RateLimiter { get; set; } = default!;
 
         private readonly LoginFormModel LoginInformation = new();
 
         private bool IsLoading;
+        private bool IsLockedOut;
 
         private string ErrorMessage = string.Empty;
 
@@ -53,20 +56,40 @@ namespace DeploymentManager.Components.Pages
                 "Login Clicked");
 
             IsLoading = true;
+            IsLockedOut = false;
             ErrorMessage = string.Empty;
 
             try
             {
+                string ipAddress = IPAddressFunction.FetchIpAddress(HttpContextAccessor);
+
+                (bool lockedOut, TimeSpan remainingTime) = RateLimiter.CheckLockout(ipAddress);
+
+                if (lockedOut)
+                {
+                    int remainingMinutes = (int)Math.Ceiling(remainingTime.TotalMinutes);
+
+                    IsLockedOut = true;
+                    ErrorMessage = $"Too many failed attempts. Please try again in {remainingMinutes} minute(s).";
+                    _Logger.LogMessage(
+                        StandardValues.LoggerValues.Warning,
+                        $"Login attempt blocked due to rate limiting for IP: {ipAddress}");
+                    IsLoading = false;
+                    return;
+                }
+
                 string credentialsToEncode = $"{LoginInformation.Username}:{HashFunction.HashString(LoginInformation.Password)}";
                 byte[] credentialsBytes = Encoding.UTF8.GetBytes(credentialsToEncode);
                 string encodedCredentials = Convert.ToBase64String(credentialsBytes);
 
                 if (encodedCredentials == AppSettings.SiteAuth)
                 {
+                    RateLimiter.ResetAttempts(ipAddress);
+
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Info,
                         "Login Successful");
-                    _Logger.ChangeIdentifier($"{LoginInformation.Username} ({IPAddressFunction.FetchIpAddress(HttpContextAccessor)})");
+                    _Logger.ChangeIdentifier($"{LoginInformation.Username} ({ipAddress})");
 
                     await SessionStorage.SetAsync(
                         "userLoggedIn",
@@ -77,10 +100,29 @@ namespace DeploymentManager.Components.Pages
 
                 else
                 {
-                    ErrorMessage = "Invalid credentials. Please check your username and password.";
+                    RateLimiter.RecordFailedAttempt(ipAddress);
+
+                    (bool nowLockedOut, TimeSpan nowRemainingTime) = RateLimiter.CheckLockout(ipAddress);
+
+                    if (nowLockedOut)
+                    {
+                        int remainingMinutes = (int)Math.Ceiling(nowRemainingTime.TotalMinutes);
+
+                        IsLockedOut = true;
+                        ErrorMessage = $"Too many failed attempts. Please try again in {remainingMinutes} minute(s).";
+                        _Logger.LogMessage(
+                            StandardValues.LoggerValues.Warning,
+                            $"Account locked out for IP: {ipAddress}");
+                    }
+
+                    else
+                    {
+                        ErrorMessage = "Invalid credentials. Please check your username and password.";
+                    }
+
                     _Logger.LogMessage(
                         StandardValues.LoggerValues.Warning,
-                        ErrorMessage);
+                        $"Failed login attempt from IP: {ipAddress}");
                 }
             }
 
