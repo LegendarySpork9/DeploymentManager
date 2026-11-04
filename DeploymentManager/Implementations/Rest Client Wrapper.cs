@@ -1,11 +1,14 @@
 // Copyright © - Unpublished - Toby Hunter
 using DeploymentManager.Abstractions;
 using RestSharp;
+using System.Collections.Concurrent;
 
 namespace DeploymentManager.Implementations
 {
     public class RestClientWrapper : IRestClientWrapper
     {
+        private static readonly ConcurrentDictionary<string, RestClient> _Clients = new();
+
         /// <summary>
         /// Executes the given request against the given URL.
         /// </summary>
@@ -13,7 +16,14 @@ namespace DeploymentManager.Implementations
             string url,
             RestRequest request)
         {
-            RestClient client = new(url);
+            Uri uri = new(url);
+            string baseUrl = uri.GetLeftPart(UriPartial.Authority);
+
+            RestClient client = _Clients.GetOrAdd(
+                baseUrl,
+                key => new RestClient(key));
+
+            request.Resource = uri.PathAndQuery;
             return await client.ExecuteAsync(request);
         }
     }
