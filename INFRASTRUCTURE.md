@@ -87,6 +87,7 @@ All services are registered as **singletons** in `Program.cs`. External dependen
 | `IIISClient` | `IISClientWrapper` | IIS site and app pool management |
 | `ITaskScheduler` | `TaskSchedulerWrapper` | Windows Task Scheduler management |
 | `IClock` | `SystemClockProvider` | Time operations |
+| `ILoginRateLimiter` | `LoginRateLimiterWrapper` | Login rate limiting and account lockout |
 | `IDataProtectionProvider` | (ASP.NET Core built-in) | Encryption for TOTP credentials |
 
 ### Services
@@ -162,6 +163,7 @@ The application uses **file-based persistence** with no database dependency.
 - Username and password login
 - Credentials stored as a **Base64-encoded SHA512 hash** in `appsettings.json` (`SiteAuth`)
 - Session managed via Blazor's `ProtectedSessionStorage` (encrypted browser session)
+- **Login rate limiting:** Failed login attempts are tracked per IP address using an in-memory `ConcurrentDictionary`. After a configurable number of failed attempts within a time window, the IP is locked out for a configurable duration. Defaults: 5 attempts within 5 minutes triggers a 15-minute lockout. Successful login resets the attempt counter.
 
 ### Deployment Approval (TOTP)
 
@@ -254,6 +256,9 @@ Cloudflare IP ranges are maintained as a static array and validated using CIDR p
         }
       }
     ],
+    "MaxLoginAttempts": 5,
+    "LoginAttemptWindowMinutes": 5,
+    "LockoutDurationMinutes": 15,
     "GitHubOptions": {
       "Auth": "<GitHub PAT>",
       "Owner": "<GitHub repository owner>"
