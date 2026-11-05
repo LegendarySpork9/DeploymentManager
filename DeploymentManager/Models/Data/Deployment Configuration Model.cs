@@ -30,7 +30,7 @@ namespace DeploymentManager.Models.Data
             {
                 ArtefactDeploymentType = ArtefactFileDeploymentType.Primary,
                 Device = null,
-                Directory = Project.Directory,
+                Directory = Project.GetDirectory(Environment),
                 ArtefactFiles = []
             });
 

@@ -2,6 +2,7 @@
 using DeploymentManager.Abstractions;
 using DeploymentManager.Entities;
 using DeploymentManager.Models.Data;
+using DeploymentManager.Models.Related;
 using DeploymentManager.Models.Responses.Related;
 using DeploymentManager.Models.Shared;
 using DeploymentManager.Orchestrators.GitHub;
@@ -366,6 +367,97 @@ namespace DeploymentManager.IntegrationTests.Orchestrators
             Assert.HasCount(
                 1,
                 result.Stages[3].WarningMessages);
+        }
+
+        /// <summary>
+        /// Tests whether the Run method uses the service name override from Variables when stopping and starting IIS sites.
+        /// </summary>
+        [TestMethod]
+        public async Task TestRunUsesServiceNameOverrideFromVariables()
+        {
+            DeployActionsOrchestrator orchestrator = CreateOrchestrator();
+            DeploymentConfigurationModel<ArtefactModel> config = CreateConfig();
+
+            config.Environment = DeploymentEnvironment.QA;
+            config.PrimaryDeploymentTarget = new()
+            {
+                Device = "TestDevice",
+                Drive = "C",
+                Name = DeploymentEnvironment.QA,
+                ArtefactSource = ArtefactSource.Actions
+            };
+            config.Project.Variables = new()
+            {
+                [DeploymentEnvironment.QA] = new ProjectVariablesModel { ServiceName = "TestProject QA" }
+            };
+
+            DeploymentHistoryModel<ArtefactModel> deployment = CreateDeploymentHistory(config);
+
+            _MockGitHubClient.Setup(c => c.DownloadArtefact(
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>()))
+                .ReturnsAsync((
+                    @"C:\Deploy\test-artefact.zip",
+                    (string?)null));
+
+            FileStream fileStream = new(
+                Path.GetTempFileName(),
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.None,
+                4096,
+                FileOptions.DeleteOnClose);
+
+            _MockFileSystem.Setup(fs => fs.ReadStream(It.IsAny<string>()))
+                .ReturnsAsync(fileStream);
+            _MockFileSystem.Setup(fs => fs.ExtractArchive(
+                    It.IsAny<string>(),
+                    It.IsAny<FileStream>()))
+                .Returns(Task.CompletedTask);
+            _MockFileSystem.Setup(fs => fs.GetFiles(It.IsAny<string>()))
+                .ReturnsAsync([@"C:\Deploy\test-artefact\file1.dll"]);
+            _MockIISClient.Setup(iis => iis.StopSite(
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<DeviceAuthModel?>()))
+                .Returns((string?)null);
+            _MockFileSystem.Setup(fs => fs.CheckDirectory(It.IsAny<string>()))
+                .ReturnsAsync(true);
+            _MockFileSystem.Setup(fs => fs.CopyFile(
+                    It.IsAny<string>(),
+                    It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
+            _MockIISClient.Setup(iis => iis.StartSite(
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<DeviceAuthModel?>()));
+            _MockFileSystem.Setup(fs => fs.DeleteDirectory(It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
+            _MockFileSystem.Setup(fs => fs.DeleteFile(It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
+
+            DeploymentHistoryModel<ArtefactModel> result = await orchestrator.Run(
+                deployment,
+                @"C:\Deploy",
+                config);
+
+            Assert.AreEqual(
+                Status.Completed,
+                result.Status);
+
+            _MockIISClient.Verify(
+                iis => iis.StopSite(
+                    "TestProject QA",
+                    It.IsAny<string>(),
+                    It.IsAny<DeviceAuthModel?>()),
+                Times.Once);
+            _MockIISClient.Verify(
+                iis => iis.StartSite(
+                    "TestProject QA",
+                    It.IsAny<string>(),
+                    It.IsAny<DeviceAuthModel?>()),
+                Times.Once);
         }
     }
 }

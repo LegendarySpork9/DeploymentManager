@@ -245,7 +245,7 @@ namespace DeploymentManager.Orchestrators
                     string device = deploymentConfiguration.PrimaryDeploymentTarget.Device;
 
                     (bool stopped, string? tempErrorMessage) = await _IISService.StopSite(
-                        deploymentConfiguration.Project.Name,
+                        deploymentConfiguration.Project.GetServiceName(deploymentConfiguration.Environment),
                         device,
                         deploymentConfiguration.PrimaryDeploymentTarget.Auth);
 
@@ -274,7 +274,7 @@ namespace DeploymentManager.Orchestrators
                         device = secondaryDeploymentTarget.Device;
 
                         (stopped, tempErrorMessage) = await _IISService.StopSite(
-                            deploymentConfiguration.Project.Name,
+                            deploymentConfiguration.Project.GetServiceName(deploymentConfiguration.Environment),
                             device,
                             secondaryDeploymentTarget.Auth);
 
@@ -305,7 +305,7 @@ namespace DeploymentManager.Orchestrators
                     string device = deploymentConfiguration.PrimaryDeploymentTarget.Device;
 
                     (bool stopped, string? tempErrorMessage) = await _TaskSchedulerService.StopTask(
-                        deploymentConfiguration.Project.Name,
+                        deploymentConfiguration.Project.GetServiceName(deploymentConfiguration.Environment),
                         device,
                         deploymentConfiguration.PrimaryDeploymentTarget.Auth);
 
@@ -334,7 +334,7 @@ namespace DeploymentManager.Orchestrators
                         device = secondaryDeploymentTarget.Device;
 
                         (stopped, tempErrorMessage) = await _TaskSchedulerService.StopTask(
-                            deploymentConfiguration.Project.Name,
+                            deploymentConfiguration.Project.GetServiceName(deploymentConfiguration.Environment),
                             device,
                             secondaryDeploymentTarget.Auth);
 
@@ -507,7 +507,7 @@ namespace DeploymentManager.Orchestrators
                     string device = deploymentConfiguration.PrimaryDeploymentTarget.Device;
 
                     (bool started, string? tempErrorMessage) = await _IISService.StartSite(
-                        deploymentConfiguration.Project.Name,
+                        deploymentConfiguration.Project.GetServiceName(deploymentConfiguration.Environment),
                         device,
                         deploymentConfiguration.PrimaryDeploymentTarget.Auth);
 
@@ -531,7 +531,7 @@ namespace DeploymentManager.Orchestrators
                         device = secondaryDeploymentTarget.Device;
 
                         (started, tempErrorMessage) = await _IISService.StartSite(
-                            deploymentConfiguration.Project.Name,
+                            deploymentConfiguration.Project.GetServiceName(deploymentConfiguration.Environment),
                             device,
                             secondaryDeploymentTarget.Auth);
 
@@ -557,7 +557,7 @@ namespace DeploymentManager.Orchestrators
                     string device = deploymentConfiguration.PrimaryDeploymentTarget.Device;
 
                     (bool started, string? tempErrorMessage) = await _TaskSchedulerService.StartTask(
-                        deploymentConfiguration.Project.Name,
+                        deploymentConfiguration.Project.GetServiceName(deploymentConfiguration.Environment),
                         device,
                         deploymentConfiguration.PrimaryDeploymentTarget.Auth);
 
@@ -581,7 +581,7 @@ namespace DeploymentManager.Orchestrators
                         device = secondaryDeploymentTarget.Device;
 
                         (started, tempErrorMessage) = await _TaskSchedulerService.StartTask(
-                            deploymentConfiguration.Project.Name,
+                            deploymentConfiguration.Project.GetServiceName(deploymentConfiguration.Environment),
                             device,
                             secondaryDeploymentTarget.Auth);
 
