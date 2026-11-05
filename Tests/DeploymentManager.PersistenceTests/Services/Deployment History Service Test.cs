@@ -272,5 +272,56 @@ namespace DeploymentManager.PersistenceTests.Services
                     It.IsAny<string>()),
                 Times.Once);
         }
+
+        /// <summary>
+        /// Tests whether the ClaimNextDeploymentId method returns incrementing IDs for sequential calls.
+        /// </summary>
+        [TestMethod]
+        public async Task TestClaimNextDeploymentIdReturnsIncrementingIds()
+        {
+            _MockFileSystem.Setup(fs => fs.CheckFile(It.IsAny<string>()))
+                .ReturnsAsync(false);
+
+            DeploymentHistoryService _deploymentHistoryService = new(
+                _MockLogger.Object,
+                _MockFileSystem.Object,
+                AppSettings);
+
+            int firstId = await _deploymentHistoryService.ClaimNextDeploymentId(AppSettings.Projects[0].Name);
+            int secondId = await _deploymentHistoryService.ClaimNextDeploymentId(AppSettings.Projects[0].Name);
+
+            Assert.AreEqual(
+                1,
+                firstId);
+            Assert.AreEqual(
+                2,
+                secondId);
+        }
+
+        /// <summary>
+        /// Tests whether the ClaimNextDeploymentId method returns unique IDs when called concurrently.
+        /// </summary>
+        [TestMethod]
+        public async Task TestClaimNextDeploymentIdConcurrent()
+        {
+            _MockFileSystem.Setup(fs => fs.CheckFile(It.IsAny<string>()))
+                .ReturnsAsync(false);
+
+            DeploymentHistoryService _deploymentHistoryService = new(
+                _MockLogger.Object,
+                _MockFileSystem.Object,
+                AppSettings);
+
+            int concurrentCalls = 10;
+
+            int[] ids = await Task.WhenAll(
+                Enumerable.Range(0, concurrentCalls)
+                    .Select(_ => _deploymentHistoryService.ClaimNextDeploymentId(AppSettings.Projects[0].Name)));
+
+            CollectionAssert.AllItemsAreUnique(ids);
+            Assert.AreEqual(
+                concurrentCalls,
+                ids.Distinct().Count());
+        }
     }
 }

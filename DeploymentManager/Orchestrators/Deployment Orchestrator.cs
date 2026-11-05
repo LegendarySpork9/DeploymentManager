@@ -43,10 +43,7 @@ namespace DeploymentManager.Orchestrators
                 StandardValues.LoggerValues.Info,
                 $"Setting up deployment for {deploymentConfiguration.Project.Name} to {deploymentConfiguration.Environment}");
 
-            List<DeploymentHistoryModel<object>> deploymentHistory = await _DeploymentHistoryService.GetDeploymentHistory(deploymentConfiguration.Project.Name);
-
-            int lastId = deploymentHistory.Count == 0 ? 0 : deploymentHistory.OrderByDescending(dh => dh.Id)
-                .First().Id;
+            int deploymentId = await _DeploymentHistoryService.ClaimNextDeploymentId(deploymentConfiguration.Project.Name);
 
             ArtefactType artefactType = typeof(T) switch
             {
@@ -226,7 +223,7 @@ namespace DeploymentManager.Orchestrators
 
             DeploymentHistoryModel<T> deployment = new()
             {
-                Id = ++lastId,
+                Id = deploymentId,
                 Type = deploymentConfiguration.Type,
                 ArtefactType = artefactType,
                 Status = Status.PendingApproval,

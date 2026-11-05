@@ -156,6 +156,12 @@ The application uses **file-based persistence** with no database dependency.
 | Downloaded Artefacts | ZIP/extracted files | `ArtefactDownloadLocation` |
 | Application Logs | Rolling text file | `Logs/DeploymentManager.log` |
 
+### Concurrency Controls
+
+- **Deployment history files:** Protected by per-project `SemaphoreSlim` locks within `DeploymentHistoryService` to prevent concurrent read-modify-write races on the same project's JSON file.
+- **Deployment ID generation:** IDs are tracked in-memory via a `ConcurrentDictionary` to prevent duplicate IDs when concurrent `SetUp` calls occur before the deployment history file is written. On application restart, the in-memory tracker is re-initialised from the file on first use per project.
+- **Deployment status file:** `DeploymentStatus.json` writes are serialised by a dedicated `SemaphoreSlim` since all projects share a single status file.
+
 ## Authentication and Security
 
 ### Site Authentication
