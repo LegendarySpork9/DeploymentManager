@@ -279,7 +279,13 @@ Cloudflare IP ranges are maintained as a static array and validated using CIDR p
           "Artefact": "<artefact name>"
         },
         "AdditionalDeploy": [],
-        "Ignore": []
+        "Ignore": [],
+        "Variables": {
+          "<Live|QA|Dev>": {
+            "ServiceName": "<IIS site or Task Scheduler task name override>",
+            "Directory": "<deployment directory override>"
+          }
+        }
       }
     ]
   }
@@ -293,6 +299,12 @@ Cloudflare IP ranges are maintained as a static array and validated using CIDR p
 | Website | `Website` | IIS Site + Application Pool |
 | Console Application | `ConsoleApplication` | Windows Scheduled Task |
 | API | `API` | IIS Site + Application Pool |
+
+### Project Variables
+
+The `Variables` property allows per-environment overrides for a project's service name and deployment directory. `Name` remains the project identity used for deployment history files and UI display, while the resolved `ServiceName` is passed to IIS or Task Scheduler. If no override is defined for the target environment, the base `Name` and `Directory` values are used as defaults.
+
+For example, a project named "Deployment Manager" can define a `QA` override with `ServiceName` set to "Deployment Manager QA", allowing both environments to be served by a single project configuration.
 
 ### Supported Environments
 

@@ -1,6 +1,7 @@
 // Copyright © - Unpublished - Toby Hunter
 using DeploymentManager.Entities;
 using DeploymentManager.Models.Data;
+using DeploymentManager.Models.Related;
 using DeploymentManager.Models.Responses.Related;
 
 namespace DeploymentManager.UnitTests.Models
@@ -344,6 +345,60 @@ namespace DeploymentManager.UnitTests.Models
             Assert.AreEqual(
                 "TestDevice",
                 result.PrimaryDeploymentTarget.Device);
+        }
+
+        /// <summary>
+        /// Tests whether the ToDeploymentModel method uses the directory override when Variables contains an override for the configured environment.
+        /// </summary>
+        [TestMethod]
+        public void TestToDeploymentModelUsesDirectoryOverride()
+        {
+            DeploymentConfigurationModel<UploadFileModel> config = new()
+            {
+                Type = DeploymentType.FileUpload,
+                Environment = DeploymentEnvironment.QA,
+                Project = new()
+                {
+                    Type = ProjectType.Website,
+                    Name = "TestProject",
+                    Directory = @"inetpub\wwwroot\TestProject",
+                    GitHub = new() { Repository = "test-repo", Artefact = "test-artefact" },
+                    Variables = new()
+                    {
+                        [DeploymentEnvironment.QA] = new ProjectVariablesModel
+                        {
+                            Directory = @"inetpub\wwwroot\TestProject QA"
+                        }
+                    }
+                },
+                Artefact = new()
+                {
+                    Id = 1,
+                    Name = "test-upload",
+                    Size = 1024,
+                    BranchId = "abc",
+                    BranchName = "main",
+                    Directory = @"C:\Uploads"
+                },
+                PrimaryDeploymentTarget = new()
+                {
+                    Device = "TestDevice",
+                    Drive = "C",
+                    Name = DeploymentEnvironment.QA,
+                    ArtefactSource = ArtefactSource.Actions
+                },
+                SecondaryDeploymentTargets = null,
+                DeploymentSettings = new()
+            };
+
+            List<DeploymentModel> result = config.ToDeploymentModel();
+
+            Assert.HasCount(
+                1,
+                result);
+            Assert.AreEqual(
+                @"inetpub\wwwroot\TestProject QA",
+                result[0].Directory);
         }
     }
 }
