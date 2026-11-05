@@ -1,4 +1,5 @@
 ﻿// Copyright © - Unpublished - Toby Hunter
+using System.Collections.Concurrent;
 using DeploymentManager.Abstractions;
 using DeploymentManager.Entities;
 using DeploymentManager.Models;
@@ -18,6 +19,10 @@ namespace DeploymentManager.Services
 
         private readonly AppSettingsModel AppSettings;
 
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> _ProjectLocks = new();
+        private readonly ConcurrentDictionary<string, int> _LastClaimedIds = new();
+        private readonly SemaphoreSlim _StatusLock = new(1, 1);
+
         // Sets the class's global variables.
         public DeploymentHistoryService(
             ILoggerService _logger,
@@ -27,6 +32,50 @@ namespace DeploymentManager.Services
             _Logger = _logger;
             _FileSystem = _fileSystem;
             AppSettings = appSettings;
+        }
+
+        /// <summary>
+        /// Returns or creates a per-project semaphore to serialise concurrent file access.
+        /// </summary>
+        private SemaphoreSlim GetProjectLock(string project) => _ProjectLocks.GetOrAdd(
+            project,
+            _ => new SemaphoreSlim(
+                1,
+                1));
+
+        /// <summary>
+        /// Atomically claims the next deployment ID for a project.
+        /// </summary>
+        public async Task<int> ClaimNextDeploymentId(string project)
+        {
+            SemaphoreSlim projectLock = GetProjectLock(project);
+
+            await projectLock.WaitAsync();
+
+            try
+            {
+                if (!_LastClaimedIds.TryGetValue(
+                    project,
+                    out int lastId))
+                {
+                    List<DeploymentHistoryModel<object>> history = await GetDeploymentHistory(project);
+                    lastId = history.Count == 0 ? 0 : history.Max(h => h.Id);
+                }
+
+                int nextId = lastId + 1;
+                _LastClaimedIds[project] = nextId;
+
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Debug,
+                    $"Claimed deployment ID {nextId} for project, {project}.");
+
+                return nextId;
+            }
+
+            finally
+            {
+                projectLock.Release();
+            }
         }
 
         /// <summary>
@@ -133,12 +182,16 @@ namespace DeploymentManager.Services
             string project,
             DeploymentHistoryModel<T> deployment)
         {
-            _Logger.LogMessage(
-                StandardValues.LoggerValues.Info,
-                $"Writing deployment history for project, {project}");
+            SemaphoreSlim projectLock = GetProjectLock(project);
+
+            await projectLock.WaitAsync();
 
             try
             {
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Info,
+                    $"Writing deployment history for project, {project}");
+
                 string filePath = Path.Combine(
                     AppSettings.DeploymentHistoryLocation,
                     $"{project}.json");
@@ -180,6 +233,11 @@ namespace DeploymentManager.Services
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
                     $"Failed to write deployment history for project, {project}");
+            }
+
+            finally
+            {
+                projectLock.Release();
             }
         }
 
@@ -254,12 +312,14 @@ namespace DeploymentManager.Services
         /// </summary>
         public async Task WriteDeploymentStatus(DeploymentStatusModel entry)
         {
-            _Logger.LogMessage(
-                StandardValues.LoggerValues.Info,
-                $"Writing deployment status for {entry.Project} to {entry.Environment}");
+            await _StatusLock.WaitAsync();
 
             try
             {
+                _Logger.LogMessage(
+                    StandardValues.LoggerValues.Info,
+                    $"Writing deployment status for {entry.Project} to {entry.Environment}");
+
                 string filePath = Path.Combine(
                     AppSettings.DeploymentHistoryLocation,
                     "DeploymentStatus.json");
@@ -298,6 +358,11 @@ namespace DeploymentManager.Services
                 _Logger.LogMessage(
                     StandardValues.LoggerValues.Info,
                     $"Failed to write deployment status for {entry.Project} to {entry.Environment}");
+            }
+
+            finally
+            {
+                _StatusLock.Release();
             }
         }
     }
