@@ -72,6 +72,7 @@ namespace DeploymentManager
             builder.Services.AddSingleton<IISService>();
             builder.Services.AddSingleton<TaskSchedulerService>();
             builder.Services.AddSingleton<DeploymentHistoryService>();
+            builder.Services.AddSingleton<ProjectConfigurationService>();
             builder.Services.AddSingleton<DeploymentOrchestrator>();
             builder.Services.AddHttpContextAccessor();
 
@@ -84,6 +85,15 @@ namespace DeploymentManager
             _logger.LogMessage(
                 StandardValues.LoggerValues.Debug,
                 "Built Application");
+
+            ProjectConfigurationService projectConfigService = app.Services.GetRequiredService<ProjectConfigurationService>();
+            projectConfigService.InitialiseAsync()
+                .GetAwaiter()
+                .GetResult();
+
+            _logger.LogMessage(
+                StandardValues.LoggerValues.Debug,
+                "Initialised Project Configuration");
 
             if (!app.Environment.IsDevelopment())
             {
