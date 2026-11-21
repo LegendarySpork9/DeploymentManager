@@ -100,6 +100,7 @@ All services are registered as **singletons** in `Program.cs`. External dependen
 | `IISService` | Starting and stopping IIS sites and application pools |
 | `TaskSchedulerService` | Starting and stopping Windows scheduled tasks |
 | `DeploymentHistoryService` | Persisting and retrieving deployment history records |
+| `ProjectConfigurationService` | CRUD operations for project configuration with file-based persistence |
 
 ### Orchestrators
 
@@ -142,6 +143,7 @@ Each deployment progresses through statuses defined by the `Status` enum:
 | Login | `/login` | Site authentication |
 | Deployment History | `/deployment-history` | View past deployment records |
 | Authenticator Setup | `/authenticator-setup` | Configure TOTP for deployment approvals |
+| Project Configuration | `/project-configuration` | Add, edit, and delete projects available for deployment |
 | Error | `/Error` | Error display (production) |
 | Not Found | `/not-found` | 404 page |
 
@@ -154,6 +156,7 @@ The application uses **file-based persistence** with no database dependency.
 | Deployment History | JSON files (one per project) | `DeploymentHistoryLocation` |
 | TOTP Credentials | Encrypted JSON file (`credential.json`) | `ApprovalCredentialLocation` |
 | Downloaded Artefacts | ZIP/extracted files | `ArtefactDownloadLocation` |
+| Project Configuration | JSON file (`projects.json`) | `ProjectConfigurationLocation` |
 | Application Logs | Rolling text file | `Logs/DeploymentManager.log` |
 
 ### Concurrency Controls
@@ -161,6 +164,7 @@ The application uses **file-based persistence** with no database dependency.
 - **Deployment history files:** Protected by per-project `SemaphoreSlim` locks within `DeploymentHistoryService` to prevent concurrent read-modify-write races on the same project's JSON file.
 - **Deployment ID generation:** IDs are tracked in-memory via a `ConcurrentDictionary` to prevent duplicate IDs when concurrent `SetUp` calls occur before the deployment history file is written. On application restart, the in-memory tracker is re-initialised from the file on first use per project.
 - **Deployment status file:** `DeploymentStatus.json` writes are serialised by a dedicated `SemaphoreSlim` since all projects share a single status file.
+- **Project configuration file:** Protected by a dedicated `SemaphoreSlim` within `ProjectConfigurationService` to serialise concurrent read-modify-write operations on `projects.json`.
 
 ## Authentication and Security
 
@@ -249,6 +253,7 @@ Cloudflare IP ranges are maintained as a static array and validated using CIDR p
     "DeploymentHistoryLocation": "<path to history directory>",
     "ApprovalCredentialLocation": "<path to TOTP credential directory>",
     "ArtefactDownloadLocation": "<path to artefact download directory>",
+    "ProjectConfigurationLocation": "<path to project configuration directory>",
     "Environments": [
       {
         "Device": "<hostname or IP>",
@@ -268,29 +273,16 @@ Cloudflare IP ranges are maintained as a static array and validated using CIDR p
     "GitHubOptions": {
       "Auth": "<GitHub PAT>",
       "Owner": "<GitHub repository owner>"
-    },
-    "Projects": [
-      {
-        "Name": "<project display name>",
-        "Type": "<Website|ConsoleApplication|API>",
-        "Directory": "<deployment target directory>",
-        "GitHub": {
-          "Repository": "<repository name>",
-          "Artefact": "<artefact name>"
-        },
-        "AdditionalDeploy": [],
-        "Ignore": [],
-        "Variables": {
-          "<Live|QA|Dev>": {
-            "ServiceName": "<IIS site or Task Scheduler task name override>",
-            "Directory": "<deployment directory override>"
-          }
-        }
-      }
-    ]
+    }
   }
 }
 ```
+
+### Project Management
+
+Projects are managed at runtime via the **Project Configuration** page (`/project-configuration`), which persists project data to a `projects.json` file at the `ProjectConfigurationLocation` path. On first startup, if no `projects.json` exists, an empty project list is initialised.
+
+The Project Configuration page requires authentication via `ProtectedSessionStorage` — unauthenticated users are redirected to `/login`.
 
 ### Supported Project Types
 

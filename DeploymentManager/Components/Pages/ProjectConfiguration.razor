@@ -1,0 +1,293 @@
+@page "/project-configuration"
+
+<PageTitle>Project Configuration</PageTitle>
+
+@if (IsLoading && !ShowForm && !ShowDeleteConfirmation)
+{
+    <div class="d-flex justify-content-center py-5">
+        <div class="spinner-border text-light" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+
+else
+{
+    @if (!ShowForm)
+    {
+        <div class="page-header">
+            <div>
+                <h4 class="page-title">Project Configuration</h4>
+                <p class="page-subtitle">Manage projects available for deployment.</p>
+            </div>
+            <button class="btn btn-primary btn-sm" @onclick="StartAdd">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                </svg>
+                Add Project
+            </button>
+        </div>
+
+        @if (!string.IsNullOrEmpty(SuccessMessage))
+        {
+            <div class="alert alert-success py-2 mb-3">@SuccessMessage</div>
+        }
+
+        @if (!string.IsNullOrEmpty(ErrorMessage))
+        {
+            <div class="alert alert-danger py-2 mb-3">@ErrorMessage</div>
+        }
+
+        @if (!Projects.Any())
+        {
+            <div class="empty-state">
+                <p>No projects configured. Click "Add Project" to get started.</p>
+            </div>
+        }
+
+        else
+        {
+            <div class="project-grid">
+                @foreach (ProjectModel project in Projects)
+                {
+                    <div class="project-card">
+                        <div class="project-card-icon">
+                            @switch (project.Type)
+                            {
+                                case ProjectType.Website:
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="#D7D7D7" viewBox="0 0 16 16">
+                                        <path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m7.5-6.923c-.67.204-1.335.82-1.887 1.855A8 8 0 0 0 5.145 4H7.5zM4.09 4a9.3 9.3 0 0 1 .64-1.539 7 7 0 0 1 .597-.933A7.03 7.03 0 0 0 2.255 4zm-.582 3.5c.03-.877.138-1.718.312-2.5H1.674a7 7 0 0 0-.656 2.5zM4.847 5a12.5 12.5 0 0 0-.338 2.5H7.5V5zM8.5 5v2.5h2.99a12.5 12.5 0 0 0-.337-2.5zM4.51 8.5a12.5 12.5 0 0 0 .337 2.5H7.5V8.5zm3.99 0V11h2.653c.187-.765.306-1.608.338-2.5zM5.145 12q.208.58.468 1.068c.552 1.035 1.218 1.65 1.887 1.855V12zm.182 2.472a7 7 0 0 1-.597-.933A9.3 9.3 0 0 1 4.09 12H2.255a7.02 7.02 0 0 0 3.072 2.472M3.82 11a13.7 13.7 0 0 1-.312-2.5h-2.49a7 7 0 0 0 .656 2.5zM8.5 12v2.923c.67-.204 1.335-.82 1.887-1.855q.26-.487.468-1.068zm3.68-1h2.146a7 7 0 0 0 .656-2.5h-2.49a13.7 13.7 0 0 1-.312 2.5m2.802-3.5a7 7 0 0 0-.656-2.5H12.18c.174.782.282 1.623.312 2.5zM11.27 2.461c.247.464.462.98.64 1.539h1.835a7.02 7.02 0 0 0-3.072-2.472c.218.284.418.598.597.933M10.855 4a8 8 0 0 0-.468-1.068C9.835 1.897 9.17 1.282 8.5 1.077V4z" />
+                                    </svg>
+                                    break;
+                                case ProjectType.API:
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="#D7D7D7" viewBox="0 0 16 16">
+                                        <path d="M6 9a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3A.5.5 0 0 1 6 9M3.854 4.146a.5.5 0 1 0-.708.708L4.793 6.5 3.146 8.146a.5.5 0 1 0 .708.708l2-2a.5.5 0 0 0 0-.708z" />
+                                        <path d="M2 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm12 1a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z" />
+                                    </svg>
+                                    break;
+                                default:
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="#D7D7D7" viewBox="0 0 16 16">
+                                        <path d="M5 0a.5.5 0 0 1 .5.5V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 1 0V2A2.5 2.5 0 0 1 14 4.5h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14a2.5 2.5 0 0 1-2.5 2.5v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14A2.5 2.5 0 0 1 2 11.5H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2A2.5 2.5 0 0 1 4.5 2V.5A.5.5 0 0 1 5 0m-.5 3A1.5 1.5 0 0 0 3 4.5v7A1.5 1.5 0 0 0 4.5 13h7a1.5 1.5 0 0 0 1.5-1.5v-7A1.5 1.5 0 0 0 11.5 3zM5 6.5A1.5 1.5 0 0 1 6.5 5h3A1.5 1.5 0 0 1 11 6.5v3A1.5 1.5 0 0 1 9.5 11h-3A1.5 1.5 0 0 1 5 9.5zM6.5 6a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5z" />
+                                    </svg>
+                                    break;
+                            }
+                        </div>
+                        <div class="project-card-name">@project.Name</div>
+                        <span class="project-type-badge">@project.Type</span>
+                        <div class="project-card-details">
+                            <span class="project-detail-text">@project.GitHub.Repository</span>
+                        </div>
+                        <div class="project-card-actions">
+                            <button class="btn btn-outline-light btn-sm" title="Edit" @onclick="() => StartEdit(project)" @onclick:stopPropagation="true">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+                                    <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
+                                </svg>
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm" title="Delete" @onclick="() => ConfirmDelete(project.Name)" @onclick:stopPropagation="true">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" />
+                                    <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    }
+
+    @if (ShowForm)
+    {
+        <div class="modal show d-block">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">@(IsAdding ? "Add Project" : "Edit Project")</h5>
+                        <button type="button" class="btn-close" @onclick="CancelEdit"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-section">
+                            <h6 class="form-section-title">Basic Information</h6>
+                            <div class="mb-3">
+                                <label class="form-label">Name</label>
+                                <input type="text" class="form-control" @bind="FormName" placeholder="Project name" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Type</label>
+                                <select class="form-control" @bind="FormType">
+                                    <option value="@ProjectType.Website">Website</option>
+                                    <option value="@ProjectType.ConsoleApplication">Console Application</option>
+                                    <option value="@ProjectType.API">API</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Directory</label>
+                                <input type="text" class="form-control" @bind="FormDirectory" placeholder="Deployment target directory" />
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h6 class="form-section-title">GitHub Configuration</h6>
+                            <div class="mb-3">
+                                <label class="form-label">Repository</label>
+                                <input type="text" class="form-control" @bind="FormGitHubRepository" placeholder="Repository name" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Artefact Name</label>
+                                <input type="text" class="form-control" @bind="FormGitHubArtefact" placeholder="Artefact name" />
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <div class="form-section-header">
+                                <h6 class="form-section-title">Additional Deploys</h6>
+                                <button class="btn btn-outline-light btn-sm" @onclick="AddAdditionalDeploy">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                                    </svg>
+                                    Add
+                                </button>
+                            </div>
+
+                            @for (int i = 0; i < FormAdditionalDeploys.Count; i++)
+                            {
+                                int index = i;
+                                <div class="dynamic-entry">
+                                    <div class="dynamic-entry-fields">
+                                        <div class="row g-2 mb-2">
+                                            <div class="col-5">
+                                                <input type="text" class="form-control form-control-sm" @bind="FormAdditionalDeploys[index].Device" placeholder="Device" />
+                                            </div>
+                                            <div class="col-2">
+                                                <input type="text" class="form-control form-control-sm" @bind="FormAdditionalDeploys[index].Drive" placeholder="Drive" />
+                                            </div>
+                                            <div class="col-5">
+                                                <input type="text" class="form-control form-control-sm" @bind="FormAdditionalDeploys[index].Directory" placeholder="Directory" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-outline-danger btn-sm dynamic-entry-remove" @onclick="() => RemoveAdditionalDeploy(index)">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            }
+
+                            @if (FormAdditionalDeploys.Count == 0)
+                            {
+                                <p class="text-muted small mb-0">No additional deploy targets configured.</p>
+                            }
+                        </div>
+
+                        <div class="form-section">
+                            <div class="form-section-header">
+                                <h6 class="form-section-title">Ignore Rules</h6>
+                                <button class="btn btn-outline-light btn-sm" @onclick="AddIgnoreRule">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                                    </svg>
+                                    Add
+                                </button>
+                            </div>
+
+                            @for (int i = 0; i < FormIgnoreRules.Count; i++)
+                            {
+                                int index = i;
+                                <div class="dynamic-entry">
+                                    <div class="dynamic-entry-fields">
+                                        <div class="row g-2">
+                                            <div class="col-4">
+                                                <select class="form-control form-control-sm" @bind="FormIgnoreRules[index].Type">
+                                                    <option value="@IgnoreType.File">File</option>
+                                                    <option value="@IgnoreType.Folder">Folder</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-8">
+                                                <input type="text" class="form-control form-control-sm" @bind="FormIgnoreRules[index].Name" placeholder="Name" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-outline-danger btn-sm dynamic-entry-remove" @onclick="() => RemoveIgnoreRule(index)">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            }
+
+                            @if (FormIgnoreRules.Count == 0)
+                            {
+                                <p class="text-muted small mb-0">No ignore rules configured.</p>
+                            }
+                        </div>
+
+                        <div class="form-section">
+                            <h6 class="form-section-title">Environment Variables</h6>
+                            <p class="text-muted small mb-3">Optional per-environment overrides for service name and directory.</p>
+
+                            @foreach (DeploymentEnvironment env in new[] { DeploymentEnvironment.Live, DeploymentEnvironment.QA, DeploymentEnvironment.Dev })
+                            {
+                                <div class="env-variable-group">
+                                    <label class="env-variable-label">@env</label>
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <input type="text" class="form-control form-control-sm" @bind="FormVariables[env].ServiceName" placeholder="Service Name" />
+                                        </div>
+                                        <div class="col-6">
+                                            <input type="text" class="form-control form-control-sm" @bind="FormVariables[env].Directory" placeholder="Directory" />
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(ErrorMessage))
+                        {
+                            <div class="alert alert-danger py-2">@ErrorMessage</div>
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline-light btn-sm" @onclick="CancelEdit">Cancel</button>
+                        <button class="btn btn-primary btn-sm" disabled="@IsLoading" @onclick="HandleSave">
+                            @if (IsLoading)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            }
+                            Save
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (ShowDeleteConfirmation)
+    {
+        <div class="modal show d-block">
+            <div class="modal-dialog modal-dialog-centered modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Delete Project</h5>
+                        <button type="button" class="btn-close" @onclick="CancelDelete"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to delete <strong>@DeleteTargetName</strong>?</p>
+                        <p class="text-muted small mb-0">This action cannot be undone.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline-light btn-sm" @onclick="CancelDelete">Cancel</button>
+                        <button class="btn btn-danger btn-sm" disabled="@IsLoading" @onclick="HandleDelete">
+                            @if (IsLoading)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            }
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}

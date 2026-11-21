@@ -13,6 +13,7 @@ namespace DeploymentManager.Models
         public string DeploymentHistoryLocation { get; set; }
         public string ApprovalCredentialLocation { get; set; }
         public string ArtefactDownloadLocation { get; set; }
+        public string ProjectConfigurationLocation { get; set; }
         public List<EnvironmentModel> Environments { get; set; }
         public GitHubOptionsModel GitHubOptions { get; set; }
         public List<ProjectModel> Projects { get; set; }
