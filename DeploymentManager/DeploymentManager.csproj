@@ -13,8 +13,8 @@
     <Copyright>Copyright ©  2026</Copyright>
     <PackageIcon>favicon.ico</PackageIcon>
     <RepositoryType>git</RepositoryType>
-    <FileVersion>1.0.0</FileVersion>
-    <AssemblyVersion>1.0.0</AssemblyVersion>
+    <FileVersion>2.0.0</FileVersion>
+    <AssemblyVersion>2.0.0</AssemblyVersion>
     <RepositoryUrl>https://github.com/LegendarySpork9/DeploymentManager</RepositoryUrl>
     <ApplicationIcon>Content\favicon.ico</ApplicationIcon>
   </PropertyGroup>
